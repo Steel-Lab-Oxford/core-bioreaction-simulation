@@ -3,7 +3,7 @@
 import chex
 
 
-from bioreaction.model.data_containers import BasicModel, Reaction, Species
+from bioreaction.model.data_containers import BasicModel, Reaction, Reactions, Species
 from bioreaction.simulation.simfuncs.basic_de import basic_de_sim
 from scripts.playground.misc import load_json_as_dict
 
@@ -36,5 +36,7 @@ def main():
     ##
 
     starting_concentration = chex.array(config['starting_concentration'])
+
+    Reactions.inputs
     basic_de_sim(starting_concentration)
 
