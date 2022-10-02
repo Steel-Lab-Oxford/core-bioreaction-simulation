@@ -28,13 +28,15 @@ class Reaction():
 
 
 @chex.dataclass
-class Reactions:
-    # Inputs, one hot, each row being a different reaction
-    #  each column is a species
-    inputs : chex.ArrayDevice
-    # Outputs * rates. Each row is a different reaction
-    #  each column is a species
-    output_rates : chex.ArrayDevice
+class Reactions():
+
+    def __init__(self) -> None:
+        # Inputs, one hot, each row being a different reaction
+        #  each column is a species
+        inputs : chex.ArrayDevice
+        # Outputs * rates. Each row is a different reaction
+        #  each column is a species
+        output_rates : chex.ArrayDevice
 
 class Extrinsics():
     """
