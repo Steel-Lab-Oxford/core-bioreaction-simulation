@@ -1,15 +1,7 @@
+from bioreaction.model.data_containers import Reactions
 import jax
 import jax.numpy as jnp
 import chex
-
-@chex.dataclass
-class Reactions:
-    # Inputs, one hot, each row being a different reaction
-    #  each column is a species
-    inputs : chex.ArrayDevice
-    # Outputs * rates. Each row is a different reaction
-    #  each column is a species
-    output_rates : chex.ArrayDevice
 
 
 def one_step_de_sim(spec_conc: chex.ArrayDevice, reactions: Reactions, delta_t: float):
