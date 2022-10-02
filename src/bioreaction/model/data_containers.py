@@ -13,6 +13,7 @@ class Species():
         #self.identifier : str
         #self.data : Data
 
+
 class Reaction():
     """
     Some process which converts species into other 
@@ -24,6 +25,16 @@ class Reaction():
         self.base_rate : float
         #self.environmental: List[Tuple[int,Extrinsics]]
 
+
+@chex.dataclass
+class Reactions:
+    # Inputs, one hot, each row being a different reaction
+    #  each column is a species
+    inputs : chex.ArrayDevice
+    # Outputs * rates. Each row is a different reaction
+    #  each column is a species
+    output_rates : chex.ArrayDevice
+
 class Extrinsics():
     """
     Other factors which we desire to model, which are relevent to our
@@ -31,7 +42,6 @@ class Extrinsics():
     """
     def __init__(self) -> None:
         pass
-
 
 
 def BasicModel():
