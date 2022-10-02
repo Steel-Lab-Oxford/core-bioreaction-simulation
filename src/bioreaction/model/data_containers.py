@@ -1,6 +1,7 @@
 from typing import List, Tuple
 #from utils.data.load import Data
 import numpy as np
+import chex
 
 
 class Species():
