@@ -8,8 +8,8 @@ class Species():
     A chemical, protein, or other item which we desire to model
     the amount of over time.
     """
-    def __init__(self) -> None:
-        self.name : str
+    def __init__(self, name: str) -> None:
+        self.name : str = name
         #self.identifier : str
         #self.data : Data
 

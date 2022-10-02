@@ -1,6 +1,6 @@
 
 
-from bioreaction.bioreactions.data_containers import BasicModel, Reaction, Species
+from bioreaction.model.data_containers import BasicModel, Reaction, Species
 
 
 def main():
@@ -15,9 +15,10 @@ def main():
     for species1 in circuit_node_names:
         for species2 in circuit_node_names:
             reaction = Reaction()
-            reaction.input = [species1, species2]
-            reaction.output = [create_combined_species(species1, species2)]
+            reaction.input = [Species(species1), Species(species2)]
+            reaction.output = [create_combined_species(Species(species1), Species(species2))]
             
-            model.reactions = 
+            model.reactions.append(reaction)
 
-    Species
+    model.species = set([set(r.input) for r in model.reactions] 
+    + [set(r.output) for r in model.reactions] )
