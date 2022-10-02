@@ -1,1 +1,1 @@
-from bioreaction.bioreactions import *
+from bioreaction.model import *
