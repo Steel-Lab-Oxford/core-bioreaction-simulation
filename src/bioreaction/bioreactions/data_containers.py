@@ -33,13 +33,13 @@ class Extrinsics():
         pass
 
 
-
-def BasicModel():
+class BasicModel():
     """
     A class representing a collection of species, reactions, and other facts.
     This should represent the abstract notion of some mathematic model of a system.
     """
     def __init__(self) -> None:
+
         self.species : List[Species]
         self.reactions : List[Reaction]
         

@@ -1,6 +1,6 @@
 
 
-from bioreaction.bioreactions.data_containers import Reaction, Species
+from bioreaction.bioreactions.data_containers import BasicModel, Reaction, Species
 
 
 def main():
@@ -11,13 +11,13 @@ def main():
     circuit_size = 3
     circuit_node_names = [f'RNA_{i}' for i in range(circuit_size)]
 
-    reactions = Reaction
+    model = BasicModel()
     for species1 in circuit_node_names:
         for species2 in circuit_node_names:
             reaction = Reaction()
             reaction.input = [species1, species2]
             reaction.output = [create_combined_species(species1, species2)]
             
-            reactions
+            model.reactions = 
 
     Species
