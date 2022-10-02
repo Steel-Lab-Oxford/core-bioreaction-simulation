@@ -1,2 +1,5 @@
-# jax, numpy, chex
 # I CBA to add requirments properly in all places right now xx
+# haha ima add some cuz I wanna pip install and run stuff
+chex
+jax
+numpy
