@@ -37,6 +37,5 @@ def main():
 
     starting_concentration = chex.array(config['starting_concentration'])
 
-    Reactions.inputs
+    Reactions.inputs = 
     basic_de_sim(starting_concentration)
-
