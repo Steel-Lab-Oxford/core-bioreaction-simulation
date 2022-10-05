@@ -1,10 +1,11 @@
 
 
+import logging
 import chex
 
 
-from bioreaction.model.data_containers import BasicModel, QuantifiedReactions, Reactant, Reaction, Reactions, Species
-from bioreaction.simulation.simfuncs.basic_de import basic_de_sim
+from src.bioreaction.model.data_containers import BasicModel, QuantifiedReactions, Reactant, Reaction, Reactions, Species
+from src.bioreaction.simulation.simfuncs.basic_de import basic_de_sim
 from scripts.playground.misc import load_json_as_dict
 
 
@@ -50,5 +51,7 @@ def main():
         reactions.reactions = model.reactions
         return reactions
 
-    starting_concentration = chex.array([config['starting_concentration']] * circuit_size)
-    basic_de_sim(starting_concentration)
+    reactions = create_reactions_from_model(model, config)
+    sim_result = basic_de_sim(reactions.quantities)
+
+    logging.info(sim_result)
