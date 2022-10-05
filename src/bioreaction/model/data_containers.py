@@ -1,3 +1,4 @@
+import logging
 from typing import Any, List, Tuple
 #from utils.data.load import Data
 import numpy as np
@@ -55,8 +56,15 @@ class QuantifiedReactions():
     def __init__(self) -> None:
         self.reactions : Reaction
         self.reactants : List[Reactant]
+        self.quantities : chex.ArrayDevice = self.combine_reactants()
 
-    def 
+    def combine_reactants(self):
+        quantities = np.zeros(len(self.reactants))
+        for i, r in enumerate(self.reactants):
+            quantities[i] = r.quantity
+        logging.warning(f'\nNot implemented: array returned as numpy instead of chex')
+        return quantities
+
 
 
 @chex.dataclass
