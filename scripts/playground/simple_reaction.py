@@ -3,7 +3,7 @@
 import chex
 
 
-from bioreaction.model.data_containers import BasicModel, Reaction, Reactions, Species
+from bioreaction.model.data_containers import BasicModel, QuantifiedReactions, Reactant, Reaction, Reactions, Species
 from bioreaction.simulation.simfuncs.basic_de import basic_de_sim
 from scripts.playground.misc import load_json_as_dict
 
@@ -35,7 +35,20 @@ def main():
 
     ##
 
-    starting_concentration = chex.array(config['starting_concentration'])
+    def pairup_reactants(model: BasicModel, config: dict):
+        reactants = []
+        for specie in model.species:
+            reactant = Reactant()
+            reactant.species = specie
+            reactant.quantity = config['starting_concentration']
+            reactants.append(reactant)
+        return reactants
 
-    Reactions.inputs = 
+    def create_reactions_from_model(model : BasicModel, config: dict):
+        reactions = QuantifiedReactions()
+        reactions.reactants = pairup_reactants(model, config)
+        reactions.reactions = model.reactions
+        return reactions
+
+    starting_concentration = chex.array([config['starting_concentration']] * circuit_size)
     basic_de_sim(starting_concentration)

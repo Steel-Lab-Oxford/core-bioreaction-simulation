@@ -1,7 +1,15 @@
-from typing import List, Tuple
+from typing import Any, List, Tuple
 #from utils.data.load import Data
 import numpy as np
 import chex
+
+
+class Unit():
+    """
+    Handling units
+    """
+    def __init__(self) -> None:
+        self.name : str
 
 
 class Species():
@@ -18,13 +26,37 @@ class Species():
 class Reaction():
     """
     Some process which converts species into other 
-    species.
+    species. Mostly a symbolic class.
     """
     def __init__(self) -> None:
         self.input : List[Species]
         self.output : List[Species]
         self.base_rate : float
         #self.environmental: List[Tuple[int,Extrinsics]]
+
+
+class Reactant():
+    """
+    Translate between species and reaction
+    """
+    def __init__(self) -> None:
+        self.species : Species
+        self.quantity : Any
+        self.units : Unit
+
+
+class QuantifiedReactions():
+    """
+    Translation from a symbolic-style Reaction to a form that includes 
+    numbers for simulation.
+
+    Might be mergable with BasicModel
+    """
+    def __init__(self) -> None:
+        self.reactions : Reaction
+        self.reactants : List[Reactant]
+
+    def 
 
 
 @chex.dataclass
