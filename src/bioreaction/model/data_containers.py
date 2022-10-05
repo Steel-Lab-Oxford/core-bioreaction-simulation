@@ -56,14 +56,14 @@ class QuantifiedReactions():
     def __init__(self) -> None:
         self.reactions : Reaction
         self.reactants : List[Reactant]
-        self.quantities : chex.ArrayDevice = self.combine_reactants()
+        self.quantities : chex.ArrayDevice
 
     def combine_reactants(self):
         quantities = np.zeros(len(self.reactants))
         for i, r in enumerate(self.reactants):
             quantities[i] = r.quantity
         logging.warning(f'\nNot implemented: array returned as numpy instead of chex')
-        return quantities
+        self.quantities = quantities
 
 
 
@@ -73,10 +73,10 @@ class Reactions():
     def __init__(self) -> None:
         # Inputs, one hot, each row being a different reaction
         #  each column is a species
-        inputs : chex.ArrayDevice
+        self.inputs : chex.ArrayDevice
         # Outputs * rates. Each row is a different reaction
         #  each column is a species
-        output_rates : chex.ArrayDevice
+        self.output_rates : chex.ArrayDevice
 
 class Extrinsics():
     """
@@ -94,6 +94,6 @@ class BasicModel():
     """
     def __init__(self) -> None:
 
-        self.species : List[Species]
-        self.reactions : List[Reaction]
+        self.species : List[Species] = []
+        self.reactions : List[Reaction] = []
         

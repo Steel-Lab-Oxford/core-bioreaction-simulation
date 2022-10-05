@@ -10,6 +10,7 @@ from scripts.playground.misc import load_json_as_dict
 
 
 def main():
+    logging.info('Activating logger')
 
     def create_combined_species(*species: str):
         return (s for s in species)
@@ -24,8 +25,10 @@ def main():
                 
                 model.reactions.append(reaction)
 
-        model.species = set([set(r.input) for r in model.reactions] 
-        + [set(r.output) for r in model.reactions] )
+        logging.info([set(r.input) for r in model.reactions])
+        model.species = set([tuple(set(r.input)) for r in model.reactions] 
+        + [tuple(set(r.output)) for r in model.reactions] )
+        return model
 
     config = load_json_as_dict('./scripts/playground/simple_config.json')
 
@@ -46,12 +49,16 @@ def main():
         return reactants
 
     def create_reactions_from_model(model : BasicModel, config: dict):
-        reactions = QuantifiedReactions()
-        reactions.reactants = pairup_reactants(model, config)
-        reactions.reactions = model.reactions
-        return reactions
+        qreactions = QuantifiedReactions()
+        qreactions.reactants = pairup_reactants(model, config)
+        qreactions.combine_reactants()
+        qreactions.reactions = model.reactions
+
+        reactions = Reactions()
+        reactions.
+        return qreactions
 
     reactions = create_reactions_from_model(model, config)
-    sim_result = basic_de_sim(reactions.quantities)
+    sim_result = basic_de_sim(reactions.quantities, reactions)
 
     logging.info(sim_result)

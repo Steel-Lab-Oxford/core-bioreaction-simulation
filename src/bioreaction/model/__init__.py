@@ -1,1 +1,1 @@
-from bioreaction.model.data_containers import *
+from src.bioreaction.model.data_containers import *

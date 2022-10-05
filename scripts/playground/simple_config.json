@@ -1,4 +1,4 @@
 {
     "data": "./scripts/playground/simple_circuit.fasta",
-    "starting_concentration": 100,
+    "starting_concentration": 100
 }
