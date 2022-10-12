@@ -55,7 +55,8 @@ def main():
         qreactions.reactions = model.reactions
 
         reactions = Reactions()
-        reactions.
+        reactions.inputs = qreactions.quantities 
+        reactions.output_rates = config
         return qreactions
 
     reactions = create_reactions_from_model(model, config)

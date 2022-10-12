@@ -57,6 +57,7 @@ class QuantifiedReactions():
         self.reactions : Reaction
         self.reactants : List[Reactant]
         self.quantities : chex.ArrayDevice
+        self.rates : chex.ArrayDevice
 
     def combine_reactants(self):
         quantities = np.zeros(len(self.reactants))
@@ -64,6 +65,8 @@ class QuantifiedReactions():
             quantities[i] = r.quantity
         logging.warning(f'\nNot implemented: array returned as numpy instead of chex')
         self.quantities = quantities
+
+    def set_rates(self, )
 
 
 
