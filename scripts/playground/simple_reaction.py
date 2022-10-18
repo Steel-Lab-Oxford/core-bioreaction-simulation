@@ -10,7 +10,7 @@ from scripts.playground.misc import load_json_as_dict
 
 
 def main():
-    logging.info('Activating logger')
+    logging.info('Activating logger') 
 
     def create_combined_species(*species: str):
         return (s for s in species)
