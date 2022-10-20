@@ -84,15 +84,16 @@ class QuantifiedReactions():
 
     Might be mergable with BasicModel
     """
-    def __init__(self, model, config) -> None:
+    def __init__(self) -> None:
         self.reactions : Reaction
         self.reactants : List[Reactant]
         self.quantities : chex.ArrayDevice
         self.rates : chex.ArrayDevice
 
-        qreactions.reactants = pairup_reactants(model, config)
-        qreactions.combine_reactants()
-        qreactions.reactions = model.reactions
+    def init_properties(self, model: BasicModel, config):
+        self.reactants = self.pairup_reactants(model, config)
+        self.combine_reactants()
+        self.reactions = model.reactions
 
     def combine_reactants(self):
         quantities = np.zeros(len(self.reactants))
@@ -106,10 +107,10 @@ class QuantifiedReactions():
 
     def pairup_reactants(model: BasicModel, config: dict):
         reactants = []
-        for specie in model.species:
+        for specie, starting_concentration in zip(model.species, config['starting_concentration']):
             reactant = Reactant()
             reactant.species = specie
-            reactant.quantity = config['starting_concentration']
+            reactant.quantity = starting_concentration
             reactants.append(reactant)
         return reactants
         

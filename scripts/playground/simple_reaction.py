@@ -39,24 +39,13 @@ def main():
 
     ##
 
-    def pairup_reactants(model: BasicModel, config: dict):
-        reactants = []
-        for specie in model.species:
-            reactant = Reactant()
-            reactant.species = specie
-            reactant.quantity = config['starting_concentration']
-            reactants.append(reactant)
-        return reactants
-
     def create_reactions_from_model(model : BasicModel, config: dict):
-        qreactions = QuantifiedReactions(model, config)
-        qreactions.reactants = pairup_reactants(model, config)
-        qreactions.combine_reactants()
-        qreactions.reactions = model.reactions
+        qreactions = QuantifiedReactions()
+        qreactions.init_properties(model, config)
 
         reactions = Reactions()
         reactions.inputs = qreactions.quantities 
-        reactions.output_rates = config
+        reactions.output_rates = chex.array(config.get('output_rates'))
         return qreactions
 
     reactions = create_reactions_from_model(model, config)
