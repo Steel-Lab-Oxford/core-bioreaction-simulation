@@ -49,7 +49,7 @@ def main():
         return reactants
 
     def create_reactions_from_model(model : BasicModel, config: dict):
-        qreactions = QuantifiedReactions()
+        qreactions = QuantifiedReactions(model, config)
         qreactions.reactants = pairup_reactants(model, config)
         qreactions.combine_reactants()
         qreactions.reactions = model.reactions

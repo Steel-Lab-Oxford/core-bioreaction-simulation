@@ -46,30 +46,6 @@ class Reactant():
         self.units : Unit
 
 
-class QuantifiedReactions():
-    """
-    Translation from a symbolic-style Reaction to a form that includes 
-    numbers for simulation.
-
-    Might be mergable with BasicModel
-    """
-    def __init__(self) -> None:
-        self.reactions : Reaction
-        self.reactants : List[Reactant]
-        self.quantities : chex.ArrayDevice
-        self.rates : chex.ArrayDevice
-
-    def combine_reactants(self):
-        quantities = np.zeros(len(self.reactants))
-        for i, r in enumerate(self.reactants):
-            quantities[i] = r.quantity
-        logging.warning(f'\nNot implemented: array returned as numpy instead of chex')
-        self.quantities = quantities
-
-    def set_rates(self, )
-
-
-
 @chex.dataclass
 class Reactions():
 
@@ -99,4 +75,41 @@ class BasicModel():
 
         self.species : List[Species] = []
         self.reactions : List[Reaction] = []
+
+
+class QuantifiedReactions():
+    """
+    Translation from a symbolic-style Reaction to a form that includes 
+    numbers for simulation.
+
+    Might be mergable with BasicModel
+    """
+    def __init__(self, model, config) -> None:
+        self.reactions : Reaction
+        self.reactants : List[Reactant]
+        self.quantities : chex.ArrayDevice
+        self.rates : chex.ArrayDevice
+
+        qreactions.reactants = pairup_reactants(model, config)
+        qreactions.combine_reactants()
+        qreactions.reactions = model.reactions
+
+    def combine_reactants(self):
+        quantities = np.zeros(len(self.reactants))
+        for i, r in enumerate(self.reactants):
+            quantities[i] = r.quantity
+        logging.warning(f'\nNot implemented: array returned as numpy instead of chex')
+        self.quantities = quantities
+
+    def set_rates(self):
+        pass
+
+    def pairup_reactants(model: BasicModel, config: dict):
+        reactants = []
+        for specie in model.species:
+            reactant = Reactant()
+            reactant.species = specie
+            reactant.quantity = config['starting_concentration']
+            reactants.append(reactant)
+        return reactants
         
