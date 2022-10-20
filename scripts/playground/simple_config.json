@@ -1,18 +1,16 @@
 {
     "data": "./scripts/playground/simple_circuit.fasta",
-    "reactions": [
-        {
-            "inputs": ["RNA1", "RNA2", "RNA3"],
-            "outputs": [
-                ["RNA1", "RNA1"],
-                ["RNA1", "RNA2"],
-                ["RNA1", "RNA3"],
-                ["RNA2", "RNA2"],
-                ["RNA2", "RNA3"],
-                ["RNA3", "RNA3"]
-            ]
-        }
-    ],
+    "reactions":{
+        "inputs": [
+            ["RNA1", "RNA1"],
+            ["RNA1", "RNA2"],
+            ["RNA1", "RNA3"],
+            ["RNA2", "RNA2"],
+            ["RNA2", "RNA3"],
+            ["RNA3", "RNA3"]
+        ],
+        "outputs": null
+    },
     "starting_concentration": [
         100, 100, 100
     ],

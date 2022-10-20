@@ -31,3 +31,15 @@ def load_json_as_dict(json_pathname: str, process=True) -> dict:
     if process:
         return process_json(jdict)
     return jdict
+
+
+def flatten_listlike(listlike, safe=False):
+    if safe:
+        flat_list = []
+        for l in listlike:
+            if type(l) == tuple or type(l) == list:
+                flat_list.extend(*l)
+            else:
+                flat_list.append(l)
+    else:
+        return [item for sublist in listlike for item in sublist]

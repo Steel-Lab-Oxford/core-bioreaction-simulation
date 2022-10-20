@@ -1,41 +1,47 @@
 
 
 import logging
+import sys
+
 import chex
+import numpy
+import jax
 
 
 from src.bioreaction.model.data_containers import BasicModel, QuantifiedReactions, Reactant, Reaction, Reactions, Species
 from src.bioreaction.simulation.simfuncs.basic_de import basic_de_sim
-from scripts.playground.misc import load_json_as_dict
+from scripts.playground.misc import flatten_listlike, load_json_as_dict
 
 
 def main():
     logging.info('Activating logger') 
 
     def create_combined_species(*species: str):
-        return (s for s in species)
+        return tuple(species)
 
-    def construct_model(input_species_names):
+    def construct_model(config: dict):
         model = BasicModel()
-        for species1 in input_species_names:
-            for species2 in input_species_names:
-                reaction = Reaction()
-                reaction.input = [Species(species1), Species(species2)]
-                reaction.output = [create_combined_species(Species(species1), Species(species2))]
-                
-                model.reactions.append(reaction)
 
-        logging.info([set(r.input) for r in model.reactions])
-        model.species = set([tuple(set(r.input)) for r in model.reactions] 
-        + [tuple(set(r.output)) for r in model.reactions] )
+        reactions_config = config['reactions']
+        input = reactions_config.get('inputs')
+        output = reactions_config.get('outputs')
+        if output is None:
+            output = [None] * len(input)
+        for i, o in zip(input, output):
+            reaction = Reaction()
+            reaction.input = sorted(i)
+            reaction.output = create_combined_species(*i) if o is None else tuple(o)
+            model.reactions.append(reaction)
+
+        model.species = set(list(set(flatten_listlike([r.input for r in model.reactions])))
+        + list(set([r.output for r in model.reactions])) )
         return model
 
     config = load_json_as_dict('./scripts/playground/simple_config.json')
 
-    circuit_size = 3
-    circuit_node_names = [f'RNA_{i}' for i in range(circuit_size)]
+    model = construct_model(config)
 
-    model = construct_model(circuit_node_names)
+    sys.exit()
 
     ##
 
