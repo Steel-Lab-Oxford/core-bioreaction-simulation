@@ -1,6 +1,6 @@
 {
     "data": "./scripts/playground/simple_circuit.fasta",
-    "reactions":{
+    "reactions": {
         "inputs": [
             ["RNA1", "RNA1"],
             ["RNA1", "RNA2"],
