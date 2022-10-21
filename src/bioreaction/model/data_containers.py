@@ -105,7 +105,7 @@ class QuantifiedReactions():
     def set_rates(self):
         pass
 
-    def pairup_reactants(model: BasicModel, config: dict):
+    def pairup_reactants(self, model: BasicModel, config: dict):
         reactants = []
         for specie, starting_concentration in zip(model.species, config['starting_concentration']):
             reactant = Reactant()

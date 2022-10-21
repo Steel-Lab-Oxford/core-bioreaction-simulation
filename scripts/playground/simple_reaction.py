@@ -2,7 +2,7 @@
 
 import logging
 import sys
-from typing import List
+from typing import Dict, List
 
 import chex
 import numpy
@@ -17,44 +17,37 @@ from scripts.playground.misc import flatten_listlike, load_json_as_dict
 def main():
     logging.info('Activating logger')
 
-    def create_combined_species(*species: str):
+    def combine_species(*species: str):
         return [Species(tuple(species))]
 
-    def make_species(species: List[str]):
-        return list(Species(i) for i in sorted(species))
+    def make_species(species: List[str], ref_species: Dict[str, Species]):
+        return list(ref_species[i] for i in sorted(species))
+
+    def retrieve_species_from_reactions(model: BasicModel):
+        return list(set(flatten_listlike([s for s in [r.input + r.output for r in model.reactions]])))
 
     def construct_model(config: dict):
         model = BasicModel()
-
         reactions_config = config['reactions']
-        input = reactions_config.get('inputs')
-        output = reactions_config.get('outputs')
-        if output is None:
-            output = [None] * len(input)
-        for i, o in zip(input, output):
+        inputs = reactions_config.get('inputs')
+        outputs = reactions_config.get('outputs')
+
+        if outputs is None:
+            outputs = [None] * len(inputs)
+        ref_species = {s: Species(s) for s in set(flatten_listlike(inputs))}
+        for i, o in zip(inputs, outputs):
             reaction = Reaction()
-            reaction.input = make_species(i)
-            reaction.output = create_combined_species(
-                *i) if o is None else make_species(i)
+            reaction.input = make_species(i, ref_species)
+            reaction.output = combine_species(
+                *i) if o is None else make_species(i, ref_species)
             model.reactions.append(reaction)
 
-        species = [s for s in [r.input + r.output for r in model.reactions]]
-        species = [s for s in model.reactions.input + model.reactions.output]
-
-        species_names = list(set(
-            list(set(flatten_listlike([r.input for r in model.reactions])))
-            + list(set([r.output for r in model.reactions]))))
-        model.species = list(Species(i) for i in species_names)
-        model.species = list(set(
-            list(set(flatten_listlike([r.input for r in model.reactions])))
-            + list(set([r.output for r in model.reactions]))))
+        model.species = retrieve_species_from_reactions(model)
         return model
 
     config = load_json_as_dict('./scripts/playground/simple_config.json')
-
     model = construct_model(config)
 
-    sys.exit()
 
     ##
 
