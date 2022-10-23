@@ -14,5 +14,5 @@ def basic_de_sim(starting_concentration: chex.ArrayDevice, reactions: Reactions,
     def to_scan(carry, inp):
         step_output = one_step_de_sim(carry, reactions, delta_t)
         return step_output, step_output
-    return jax.lax.scan(to_scan, starting_concentration, None, length = num_steps)[1]
+    return jax.lax.scan(to_scan, starting_concentration, None, length = num_steps)
 

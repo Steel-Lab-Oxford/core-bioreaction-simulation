@@ -3,3 +3,5 @@
 chex
 jax
 numpy
+matplotlib
+seaborn

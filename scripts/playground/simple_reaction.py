@@ -5,7 +5,7 @@ import sys
 from typing import Dict, List
 
 import chex
-import numpy
+import numpy as np
 import jax
 
 
@@ -54,13 +54,14 @@ def main():
     def create_reactions_from_model(model: BasicModel, config: dict):
         qreactions = QuantifiedReactions()
         qreactions.init_properties(model, config)
-
-        reactions = Reactions()
-        reactions.inputs = qreactions.quantities
-        reactions.output_rates = chex.array(config.get('output_rates'))
         return qreactions
 
-    reactions = create_reactions_from_model(model, config)
-    sim_result = basic_de_sim(reactions.quantities, reactions)
+    qreactions = create_reactions_from_model(model, config)
+    sim_result = basic_de_sim(qreactions.quantities, qreactions.reactions, delta_t=0.1, num_steps=2)
 
-    logging.info(sim_result)
+    import matplotlib.pyplot as plt
+
+    plt.plot(sim_result)
+    plt.show()
+
+    pass

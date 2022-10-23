@@ -1,8 +1,13 @@
 import logging
 from typing import Any, List, Tuple
-#from utils.data.load import Data
+from jax import numpy as jnp
 import numpy as np
 import chex
+
+from scripts.playground.misc import flatten_listlike
+
+
+JNP_DTYPE = jnp.float32
 
 
 class Unit():
@@ -85,22 +90,35 @@ class QuantifiedReactions():
     Might be mergable with BasicModel
     """
     def __init__(self) -> None:
-        self.reactions : Reaction
+        self.reactions : Reactions
         self.reactants : List[Reactant]
         self.quantities : chex.ArrayDevice
         self.rates : chex.ArrayDevice
 
     def init_properties(self, model: BasicModel, config):
         self.reactants = self.pairup_reactants(model, config)
-        self.combine_reactants()
-        self.reactions = model.reactions
+        self.quantities = self.combine_reactants(self.reactants)
 
-    def combine_reactants(self):
-        quantities = np.zeros(len(self.reactants))
-        for i, r in enumerate(self.reactants):
-            quantities[i] = r.quantity
+        reactions = Reactions()
+        input_species = [s for s in model.species if s in flatten_listlike([r.input for r in model.reactions])]
+        # onehot_indices = []
+        # for i, r in enumerate(model.reactions):
+        #     for s in r.input:
+        #         onehot_indices.append([i, input_species.index(s)])
+        # inputs[np.array(onehot_indices)[:, 0], np.array(onehot_indices)[:, 1]] = 1
+        inputs = np.zeros((len(model.reactions), len(input_species)))
+        for i, r in enumerate(model.reactions):
+            for s in r.input:
+                inputs[i, input_species.index(s)] += 1
+        reactions.inputs = jnp.array(inputs, dtype=JNP_DTYPE)
+        reactions.output_rates = jnp.array(config.get('output_rates'), dtype=JNP_DTYPE)
+        self.reactions = reactions
+
+    @staticmethod
+    def combine_reactants(reactants: List[Reactant]):
+        quantities = jnp.array([r.quantity for r in reactants], dtype=JNP_DTYPE)
         logging.warning(f'\nNot implemented: array returned as numpy instead of chex')
-        self.quantities = quantities
+        return quantities
 
     def set_rates(self):
         pass
