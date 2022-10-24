@@ -6,13 +6,16 @@ from scripts.playground.misc import flatten_listlike
 
 
 def combine_species(species: List[str], ref_species: Dict[str, Species]):
-        return [Species(tuple(make_species(species, ref_species)))]
+    return [Species(tuple(make_species(species, ref_species)))]
+
 
 def make_species(species: List[str], ref_species: Dict[str, Species]):
     return list(ref_species[i] for i in sorted(species))
 
+
 def retrieve_species_from_reactions(model: BasicModel):
     return list(set(flatten_listlike([s for s in [r.input + r.output for r in model.reactions]])))
+
 
 def construct_model(config: dict):
     model = BasicModel()
@@ -30,6 +33,6 @@ def construct_model(config: dict):
         reaction.output = combine_species(
             i, ref_species) if o is None else make_species(i, ref_species)
         model.reactions.append(reaction)
-    
+
     model.species = retrieve_species_from_reactions(model)
     return model
