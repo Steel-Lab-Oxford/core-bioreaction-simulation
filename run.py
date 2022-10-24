@@ -3,7 +3,7 @@
 import logging
 
 
-from scripts.playground.simple_reaction import main
+from scripts.playground.signal_reaction import main
 
 
 FORMAT = "[%(filename)s:%(lineno)s - %(funcName)20s() ] %(message)s"
