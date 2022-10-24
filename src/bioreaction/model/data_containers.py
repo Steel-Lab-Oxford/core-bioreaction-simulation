@@ -4,7 +4,7 @@ from jax import numpy as jnp
 import numpy as np
 import chex
 
-from scripts.playground.misc import flatten_listlike
+from scripts.playground.misc import flatten_listlike, get_unique_flat
 
 
 JNP_DTYPE = jnp.float32
@@ -27,6 +27,15 @@ class Species():
         self.name : str = name
         #self.identifier : str
         #self.data : Data
+
+    def __lt__(self, other):
+        if type(other.name) == tuple and type(self.name) == tuple:
+            return self.name[0] < other.name[0]
+        elif type(other.name) == tuple:
+            return self.name > ''
+        elif type(self.name) == tuple:
+            return other.name > ''
+        return self.name < other.name
 
 
 class Reaction():
@@ -96,23 +105,9 @@ class QuantifiedReactions():
         self.rates : chex.ArrayDevice
 
     def init_properties(self, model: BasicModel, config):
-        self.reactants = self.pairup_reactants(model, config)
+        self.reactants = self.init_reactants(model, config)
         self.quantities = self.combine_reactants(self.reactants)
-
-        reactions = Reactions()
-        input_species = [s for s in model.species if s in flatten_listlike([r.input for r in model.reactions])]
-        # onehot_indices = []
-        # for i, r in enumerate(model.reactions):
-        #     for s in r.input:
-        #         onehot_indices.append([i, input_species.index(s)])
-        # inputs[np.array(onehot_indices)[:, 0], np.array(onehot_indices)[:, 1]] = 1
-        inputs = np.zeros((len(model.reactions), len(input_species)))
-        for i, r in enumerate(model.reactions):
-            for s in r.input:
-                inputs[i, input_species.index(s)] += 1
-        reactions.inputs = jnp.array(inputs, dtype=JNP_DTYPE)
-        reactions.output_rates = jnp.array(config.get('output_rates'), dtype=JNP_DTYPE)
-        self.reactions = reactions
+        self.reactions = self.init_reactions(model, config)
 
     @staticmethod
     def combine_reactants(reactants: List[Reactant]):
@@ -120,15 +115,29 @@ class QuantifiedReactions():
         logging.warning(f'\nNot implemented: array returned as numpy instead of chex')
         return quantities
 
-    def set_rates(self):
-        pass
+    def init_reactions(self, model: BasicModel, config: dict):
+        reactions = Reactions()
+        species = get_unique_flat([r.input + r.output for r in model.reactions])
+        inputs = np.zeros((len(model.reactions), len(species)))
+        for i, r in enumerate(model.reactions):
+            for s in r.input:
+                inputs[i, species.index(s)] += 1
+        reactions.inputs = jnp.array(inputs, dtype=JNP_DTYPE)
+        reactions.output_rates = jnp.array(config.get('output_rates'), dtype=JNP_DTYPE)
+        return reactions
 
-    def pairup_reactants(self, model: BasicModel, config: dict):
+    def init_reactants(self, model: BasicModel, config: dict):
         reactants = []
-        for specie, starting_concentration in zip(model.species, config['starting_concentration']):
+        starting_concentration = iter(config['starting_concentration'])
+        input_species = get_unique_flat([r.input for r in model.reactions])
+
+        for specie in model.species:
             reactant = Reactant()
             reactant.species = specie
-            reactant.quantity = starting_concentration
+            if specie in input_species:
+                reactant.quantity = next(starting_concentration)
+            else:
+                reactant.quantity = 0
             reactants.append(reactant)
         return reactants
         

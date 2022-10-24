@@ -43,3 +43,9 @@ def flatten_listlike(listlike, safe=False):
                 flat_list.append(l)
     else:
         return [item for sublist in listlike for item in sublist]
+
+
+def get_unique_flat(listlike):
+    u = list(set(flatten_listlike(listlike)))
+    u.sort()
+    return u
