@@ -2,7 +2,7 @@
 
 from typing import Dict, List
 from bioreaction.model.data_containers import BasicModel, Reaction, Species
-from bioreaction.misc.misc import flatten_listlike
+from bioreaction.misc.misc import flatten_listlike, get_unique_flat
 
 
 def combine_species(species: List[str], ref_species: Dict[str, Species]):
@@ -14,7 +14,7 @@ def make_species(species: List[str], ref_species: Dict[str, Species]):
 
 
 def retrieve_species_from_reactions(model: BasicModel):
-    return list(set(flatten_listlike([s for s in [r.input + r.output for r in model.reactions]])))
+    return get_unique_flat([r.input + r.output for r in model.reactions])
 
 
 def construct_model(config: dict):
@@ -31,7 +31,7 @@ def construct_model(config: dict):
         reaction = Reaction()
         reaction.input = make_species(i, ref_species)
         reaction.output = combine_species(
-            i, ref_species) if o is None else make_species(i, ref_species)
+            i, ref_species) if o is None else make_species(o, ref_species)
         model.reactions.append(reaction)
 
     model.species = retrieve_species_from_reactions(model)

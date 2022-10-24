@@ -2,20 +2,55 @@
     "data": "./scripts/playground/simple_circuit.fasta",
     "reactions": {
         "inputs": [
+            ["xRNA1"],
+            ["xRNA2"],
+            ["xRNA3"],
             ["RNA1", "RNA1"],
             ["RNA1", "RNA2"],
             ["RNA1", "RNA3"],
             ["RNA2", "RNA2"],
             ["RNA2", "RNA3"],
-            ["RNA3", "RNA3"]
+            ["RNA3", "RNA3"],
+            ["RNA1"],
+            ["RNA2"],
+            ["RNA3"]
         ],
-        "outputs": null
+        "outputs": [
+            ["RNA1"],
+            ["RNA2"],
+            ["RNA3"],
+            ["RNA1 + RNA1"],
+            ["RNA1 + RNA2"],
+            ["RNA1 + RNA3"],
+            ["RNA2 + RNA2"],
+            ["RNA2 + RNA3"],
+            ["RNA3 + RNA3"],
+            ["dRNA1"],
+            ["dRNA2"],
+            ["dRNA3"]
+        ]
     },
-    "starting_concentration": [
-        100, 100, 100
-    ],
+    "starting_concentration": {
+        "dRNA1": 0,
+        "dRNA2": 0,
+        "dRNA3": 0,
+        "RNA1": 100,
+        "RNA2": 100,
+        "RNA3": 100,
+        "RNA1 + RNA1": 0,
+        "RNA1 + RNA2": 0,
+        "RNA1 + RNA3": 0,
+        "RNA2 + RNA2": 0,
+        "RNA2 + RNA3": 0,
+        "RNA3 + RNA3": 0,
+        "xRNA1": 0,
+        "xRNA2": 0,
+        "xRNA3": 0
+    },
     "output_rates": [
-        0, 0.05, 0.01, 0, 0.01, 0
+        1, 1, 1,
+        0, 0.05, 0.01, 0, 0.01, 0,
+        1, 1, 1.5
     ],
     "simulation": {
         "delta_t": 0.1,
