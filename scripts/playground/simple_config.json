@@ -19,6 +19,6 @@
     ],
     "simulation": {
         "delta_t": 0.1,
-        "num_steps": 100
+        "num_steps": 10000
     }
 }

@@ -37,6 +37,9 @@ class Species():
             return other.name > ''
         return self.name < other.name
 
+    def __repr__(self) -> str:
+        return self.name
+
 
 class Reaction():
     """
@@ -108,14 +111,8 @@ class QuantifiedReactions():
 
     def init_properties(self, model: BasicModel, config):
         self.reactants = self.init_reactants(model, config)
-        self.quantities = self.combine_reactants(self.reactants)
+        self.quantities = jnp.array([r.quantity for r in self.reactants], dtype=JNP_DTYPE)
         self.reactions = self.init_reactions(model, config)
-
-    @staticmethod
-    def combine_reactants(reactants: List[Reactant]):
-        quantities = jnp.array([r.quantity for r in reactants], dtype=JNP_DTYPE)
-        logging.warning(f'\nNot implemented: array returned as numpy instead of chex')
-        return quantities
 
     def init_reactions(self, model: BasicModel, config: dict):
         reactions = Reactions()
