@@ -9,7 +9,7 @@ from src.bioreaction.model.data_tools import construct_model
 
 from src.bioreaction.model.data_containers import QuantifiedReactions
 from src.bioreaction.simulation.simfuncs.basic_de import basic_de_sim
-from scripts.playground.misc import load_json_as_dict
+from bioreaction.misc.misc import load_json_as_dict
 
 
 def main():

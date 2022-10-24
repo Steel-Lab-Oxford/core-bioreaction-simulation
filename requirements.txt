@@ -2,6 +2,7 @@
 # haha ima add some cuz I wanna pip install and run stuff
 chex
 diffrax
+ipykernel
 jax
 numpy
 matplotlib

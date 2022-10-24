@@ -3,7 +3,7 @@ from jax import numpy as jnp
 import numpy as np
 import chex
 
-from scripts.playground.misc import get_unique_flat
+from bioreaction.misc.misc import get_unique_flat
 
 
 JNP_DTYPE = jnp.float32

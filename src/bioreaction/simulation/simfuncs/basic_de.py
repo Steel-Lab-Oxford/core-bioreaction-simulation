@@ -1,4 +1,4 @@
-from src.bioreaction.model.data_containers import Reactions
+from bioreaction.model.data_containers import Reactions
 import jax
 import jax.numpy as jnp
 import chex

@@ -10,7 +10,7 @@ import pandas as pd
 from src.bioreaction.model.data_tools import construct_model
 from src.bioreaction.model.data_containers import QuantifiedReactions
 from src.bioreaction.simulation.simfuncs.basic_de import basic_de_sim
-from scripts.playground.misc import load_json_as_dict
+from bioreaction.misc.misc import load_json_as_dict
 
 
 def main():
@@ -34,7 +34,7 @@ def main():
 
     term = dfx.ODETerm(vector_field)
     solver = dfx.Tsit5()
-    sim_result = dfx.diffeqsolve(term, solver, t0=0, t1=1, dt0=0.1, y0=1)
+    sim_result = dfx.diffeqsolve(term, solver, t0=0, t1=2, dt0=0.1, y0=1)
 
     # Visualise
     # df = pd.DataFrame(data=sim_result[1], columns=[

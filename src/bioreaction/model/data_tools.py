@@ -1,8 +1,8 @@
 
 
 from typing import Dict, List
-from src.bioreaction.model.data_containers import BasicModel, Reaction, Species
-from scripts.playground.misc import flatten_listlike
+from bioreaction.model.data_containers import BasicModel, Reaction, Species
+from bioreaction.misc.misc import flatten_listlike
 
 
 def combine_species(species: List[str], ref_species: Dict[str, Species]):
