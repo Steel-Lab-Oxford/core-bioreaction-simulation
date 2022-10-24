@@ -4,14 +4,10 @@ from jax import numpy as jnp
 import numpy as np
 import chex
 
-<<<<<<< HEAD
 from scripts.playground.misc import flatten_listlike, get_unique_flat
 
 
 JNP_DTYPE = jnp.float32
-=======
-from scripts.playground.misc import flatten_listlike
->>>>>>> f07842c (minor fixes)
 
 
 class Unit():
@@ -111,20 +107,9 @@ class QuantifiedReactions():
         self.rates : chex.ArrayDevice
 
     def init_properties(self, model: BasicModel, config):
-<<<<<<< HEAD
         self.reactants = self.init_reactants(model, config)
         self.quantities = self.combine_reactants(self.reactants)
         self.reactions = self.init_reactions(model, config)
-=======
-        self.reactants = self.pairup_reactants(model, config)
-        self.combine_reactants()
-        self.reactions = Reactions()
-        self.reactions.input_col_labels = set(flatten_listlike([r.input for r in model.reactions]))
-        init_matrix = np.zeros((len(model.reactions), len(self.reactions.input_col_labels)))
-        self.reactions.inputs = 
-        self.reactions.output_col_labels = set(flatten_listlike([r.input for r in model.reactions]))
-        self.reactions.output_rates = model.reactions 
->>>>>>> f07842c (minor fixes)
 
     @staticmethod
     def combine_reactants(reactants: List[Reactant]):

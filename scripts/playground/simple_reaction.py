@@ -10,7 +10,7 @@ import jax
 import jax.numpy as jnp
 
 
-from src.bioreaction.model.data_containers import BasicModel, QuantifiedReactions, Reactant, Reaction, Reactions, Species
+from src.bioreaction.model.data_containers import BasicModel, QuantifiedReactions, Reaction, Species
 from src.bioreaction.simulation.simfuncs.basic_de import basic_de_sim
 from scripts.playground.misc import flatten_listlike, get_unique_flat, load_json_as_dict
 
