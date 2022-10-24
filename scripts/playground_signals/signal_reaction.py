@@ -14,7 +14,8 @@ from bioreaction.misc.misc import load_json_as_dict
 
 
 def main():
-    config = load_json_as_dict('./scripts/playground/simple_config.json')
+
+    config = load_json_as_dict('./scripts/playground_signals/simple_config.json')
     model = construct_model(config)
 
     qreactions = QuantifiedReactions()
@@ -23,26 +24,30 @@ def main():
     # sim_result = basic_de_sim(qreactions.quantities, qreactions.reactions,
     #                           delta_t=config['simulation']['delta_t'], num_steps=config['simulation']['num_steps'])
     # Signal
+    from functools import partial
     import diffrax as dfx
 
-    def x(t):  # control signal
-        return t + 1
+    def x(t, total_time, dt, step_signal):  # control signal
+        return step_signal * t / (total_time / dt)
+
+    def step_function(t, total_time, dt):
+        if t < (total_time / dt / 2):
+            return 0
+        else:
+            return 1
 
     # exponential decay subject to affine control
-    def vector_field(t, y, args):
+    def vector_field(t, y, args, x=None):
         return -y + x(t)
 
-    term = dfx.ODETerm(vector_field)
-    solver = dfx.Tsit5()
-    sim_result = dfx.diffeqsolve(term, solver, t0=0, t1=2, dt0=0.1, y0=1)
+    t0, t1, dt0 = 0, 30, 0.1
+    # signal = partial(x, total_time=t1, dt=dt0, step_signal=4)
+    signal = partial(step_function, total_time=t1, dt=dt0)
 
-    # Visualise
-    # df = pd.DataFrame(data=sim_result[1], columns=[
-    #                   str(s.name) for s in model.species])
-    # df['time'] = np.arange(config['simulation']['num_steps'] *
-    #                        config['simulation']['delta_t'], step=config['simulation']['delta_t'])
-    # dfm = df.melt('time', var_name='cols', value_name='vals')
-    # sns.lineplot(x='time', y='vals', hue='cols', data=dfm)  # , kind='point')
-    # plt.savefig('test.png')
+    term = dfx.ODETerm(partial(vector_field, x=signal))
+    solver = dfx.Tsit5()
+    saveat = dfx.SaveAt(t0=True, t1=True, steps=True)
+    sim_result = dfx.diffeqsolve(term, solver, t0=t0, t1=t1, dt0=dt0, y0=1, saveat=saveat)
+
 
     pass
