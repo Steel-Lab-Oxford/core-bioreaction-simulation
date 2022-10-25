@@ -4,7 +4,7 @@ from jax import numpy as jnp
 import numpy as np
 import chex
 
-from bioreaction.misc.misc import flatten_listlike, get_unique_flat
+from bioreaction.misc.misc import get_unique_flat, per_mol_to_per_molecules
 
 
 JNP_DTYPE = jnp.float32
@@ -141,9 +141,9 @@ class QuantifiedReactions():
             for inp in r.output:
                 outputs[i, species.index(inp)] += 1
         forward_rates = jnp.array(
-            config.get('forward_rates'), dtype=JNP_DTYPE)
+            per_mol_to_per_molecules(config.get('forward_rates')), dtype=JNP_DTYPE)
         reverse_rates = jnp.array(
-            config.get('reverse_rates'), dtype=JNP_DTYPE)
+            per_mol_to_per_molecules(config.get('reverse_rates')), dtype=JNP_DTYPE)
 
         reactions = Reactions(col_labels=list([s.name for s in species]),
                               inputs=jnp.array(inputs, dtype=JNP_DTYPE),
