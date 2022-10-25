@@ -40,7 +40,7 @@ class Species():
         return self.name < other.name
 
     def __repr__(self) -> str:
-        return 'Species: ' + self.name
+        return 'Species: ' + str(self.name)
 
 
 class Reaction():

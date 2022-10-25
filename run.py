@@ -1,6 +1,7 @@
 
 
 import logging
+from src.bioreaction.model.data_tools import construct_model
 
 
 from scripts.playground.simple_reaction import main
