@@ -31,7 +31,7 @@ def main():
                       str(s.name) for s in model.species])
     df['time'] = np.arange(config['simulation']['num_steps'] *
                            config['simulation']['delta_t'], step=config['simulation']['delta_t'])
-    df.drop(columns=['dRNA1', 'dRNA2', 'dRNA3', 'xRNA1', 'xRNA2', 'xRNA3'], inplace=True)
+    df.drop(columns=['dRNA1', 'dRNA2', 'dRNA3', 'aRNA1', 'aRNA2', 'aRNA3'], inplace=True)
     dfm = df.melt('time', var_name='species', value_name='amounts')
     sns.lineplot(x='time', y='amounts', hue='species', data=dfm)  # , kind='point')
     plt.savefig('test.png')

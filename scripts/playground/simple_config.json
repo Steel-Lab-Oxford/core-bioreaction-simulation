@@ -2,9 +2,9 @@
     "data": "./scripts/playground/simple_circuit.fasta",
     "reactions": {
         "inputs": [
-            ["xRNA1"],
-            ["xRNA2"],
-            ["xRNA3"],
+            ["aRNA1"],
+            ["aRNA2"],
+            ["aRNA3"],
             ["RNA1", "RNA1"],
             ["RNA1", "RNA2"],
             ["RNA1", "RNA3"],
@@ -43,12 +43,12 @@
         "RNA2 + RNA2": 0,
         "RNA2 + RNA3": 0,
         "RNA3 + RNA3": 0,
-        "xRNA1": 0,
-        "xRNA2": 0,
-        "xRNA3": 0
+        "aRNA1": 1000000,
+        "aRNA2": 1000000,
+        "aRNA3": 1000000
     },
     "forward_rates": [
-        1, 1, 1,
+        0.000001, 0.000001, 0.000001,
         0, 0.05, 0.01, 0, 0.01, 0,
         1, 1, 1.5
     ],

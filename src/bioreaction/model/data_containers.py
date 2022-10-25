@@ -69,15 +69,15 @@ class Reactant():
 
 @chex.dataclass
 class Reactions:
-    # Input amounts, n-hot, each row being a different reaction
+    # Input and output amounts, n-hot, each row being a different reaction
     #  each column is a species
     col_labels: list
-    nhot: chex.ArrayDevice
-    # Onehot inputs and outputs
+    # n-hot inputs and outputs (again row: reaction, column: species)
     inputs: chex.ArrayDevice
     outputs: chex.ArrayDevice
-    # Output amounts * rates. Each row is a different reaction
-    #  each column is a species
+    inputs_onehot: chex.ArrayDevice
+    outputs_onehot: chex.ArrayDevice
+    # Forward and reverse rates for each reaction
     forward_rates: chex.ArrayDevice
     reverse_rates: chex.ArrayDevice
 
@@ -127,29 +127,28 @@ class QuantifiedReactions():
     def init_reactions(self, model: BasicModel, config: dict):
 
         def make_onehot(matrix):
-            onehot = deepcopy(inputs)
+            onehot = deepcopy(matrix)
             onehot[onehot > 0] = 1
             return jnp.array(onehot, dtype=JNP_DTYPE)
-        
+
         species = get_unique_flat(
             [r.input + r.output for r in model.reactions])
-        col_labels = list([s.name for s in species])
         inputs = np.zeros((len(model.reactions), len(species)))
         outputs = np.zeros((len(model.reactions), len(species)))
         for i, r in enumerate(model.reactions):
-            for s in r.input:
-                inputs[i, species.index(s)] += 1
-            for s in r.output:
-                outputs[i, species.index(s)] += 1
-        inputs_onehot = make_onehot(inputs)
-        outputs_onehot = make_onehot(outputs)
-        nhot = 
-        inputs = jnp.array(inputs, dtype=JNP_DTYPE)
+            for inp in r.input:
+                inputs[i, species.index(inp)] += 1
+            for inp in r.output:
+                outputs[i, species.index(inp)] += 1
         forward_rates = jnp.array(
             config.get('forward_rates'), dtype=JNP_DTYPE)
         reverse_rates = jnp.array(
             config.get('reverse_rates'), dtype=JNP_DTYPE)
-        reactions = Reactions(col_labels=col_labels, inputs=inputs, inputs_onehot=inputs_onehot,
+
+        reactions = Reactions(col_labels=list([s.name for s in species]),
+                              inputs=jnp.array(inputs, dtype=JNP_DTYPE),
+                              outputs=jnp.array(inputs, dtype=JNP_DTYPE),
+                              inputs_onehot=make_onehot(inputs), outputs_onehot=make_onehot(outputs),
                               forward_rates=forward_rates, reverse_rates=reverse_rates)
         return reactions
 
