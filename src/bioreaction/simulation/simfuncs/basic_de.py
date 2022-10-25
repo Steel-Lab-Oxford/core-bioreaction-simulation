@@ -7,8 +7,10 @@ import chex
 def one_step_de_sim(spec_conc: chex.ArrayDevice, reactions: Reactions, delta_t: float):
     concentration_factors = jnp.prod(
         jnp.power(spec_conc * reactions.inputs_onehot, reactions.inputs), axis=1)
-    implied_delta = reactions.output_rates @ concentration_factors * delta_t
+    implied_delta = reactions.output_rates * concentration_factors * delta_t
     return spec_conc + implied_delta
+
+    spec_conc * reactions.inputs_onehot
 
 
 def basic_de_sim(starting_concentration: chex.ArrayDevice, reactions: Reactions, delta_t: float, num_steps: int):
