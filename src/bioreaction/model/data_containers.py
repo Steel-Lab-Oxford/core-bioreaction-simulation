@@ -147,7 +147,7 @@ class QuantifiedReactions():
 
         reactions = Reactions(col_labels=list([s.name for s in species]),
                               inputs=jnp.array(inputs, dtype=JNP_DTYPE),
-                              outputs=jnp.array(inputs, dtype=JNP_DTYPE),
+                              outputs=jnp.array(outputs, dtype=JNP_DTYPE),
                               inputs_onehot=make_onehot(inputs), outputs_onehot=make_onehot(outputs),
                               forward_rates=forward_rates, reverse_rates=reverse_rates)
         return reactions

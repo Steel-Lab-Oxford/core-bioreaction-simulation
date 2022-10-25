@@ -12,9 +12,9 @@ def one_step_de_sim(spec_conc: chex.ArrayDevice, reactions: Reactions, delta_t: 
     forward_delta = concentration_factors_in * reactions.forward_rates * delta_t
     reverse_delta = concentration_factors_out * reactions.reverse_rates * delta_t
     return spec_conc \
-        + forward_delta @ (reactions.outputs) + reverse_delta @ (reactions.inputs) 
-        # - forward_delta @ (reactions.inputs) - \
-        # reverse_delta @ (reactions.outputs)
+        + forward_delta @ (reactions.outputs) + reverse_delta @ (reactions.inputs) \
+        - forward_delta @ (reactions.inputs) - \
+        reverse_delta @ (reactions.outputs)
 
 
 def basic_de_sim(starting_concentration: chex.ArrayDevice, reactions: Reactions, delta_t: float, num_steps: int):
