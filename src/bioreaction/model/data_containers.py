@@ -76,8 +76,8 @@ class Reactions:
     inputs_onehot: chex.ArrayDevice
     # Output amounts * rates. Each row is a different reaction
     #  each column is a species
-    output_rates: chex.ArrayDevice
-
+    forward_rates: chex.ArrayDevice
+    reverse_rates: chex.ArrayDevice
 
 
 class Extrinsics():
@@ -129,14 +129,18 @@ class QuantifiedReactions():
         for i, r in enumerate(model.reactions):
             for s in r.input:
                 inputs[i, species.index(s)] += 1
-        col_labels = list([s.name for s in get_unique_flat([r.input + r.output for r in model.reactions])])
+        col_labels = list([s.name for s in get_unique_flat(
+            [r.input + r.output for r in model.reactions])])
         inputs_onehot = deepcopy(inputs)
         inputs_onehot[inputs_onehot > 0] = 1
         inputs_onehot = jnp.array(inputs_onehot, dtype=JNP_DTYPE)
         inputs = jnp.array(inputs, dtype=JNP_DTYPE)
-        output_rates = jnp.array(
-            config.get('output_rates'), dtype=JNP_DTYPE)
-        reactions = Reactions(col_labels=col_labels, inputs=inputs, inputs_onehot=inputs_onehot, output_rates=output_rates)
+        forward_rates = jnp.array(
+            config.get('forward_rates'), dtype=JNP_DTYPE)
+        reverse_rates = jnp.array(
+            config.get('reverse_rates'), dtype=JNP_DTYPE)
+        reactions = Reactions(col_labels=col_labels, inputs=inputs, inputs_onehot=inputs_onehot,
+                              forward_rates=forward_rates, reverse_rates=reverse_rates)
         return reactions
 
     def init_reactants(self, model: BasicModel, config: dict):
