@@ -72,8 +72,10 @@ class Reactions:
     # Input amounts, n-hot, each row being a different reaction
     #  each column is a species
     col_labels: list
+    nhot: chex.ArrayDevice
+    # Onehot inputs and outputs
     inputs: chex.ArrayDevice
-    inputs_onehot: chex.ArrayDevice
+    outputs: chex.ArrayDevice
     # Output amounts * rates. Each row is a different reaction
     #  each column is a species
     forward_rates: chex.ArrayDevice
@@ -123,17 +125,25 @@ class QuantifiedReactions():
         self.reactions = self.init_reactions(model, config)
 
     def init_reactions(self, model: BasicModel, config: dict):
+
+        def make_onehot(matrix):
+            onehot = deepcopy(inputs)
+            onehot[onehot > 0] = 1
+            return jnp.array(onehot, dtype=JNP_DTYPE)
+        
         species = get_unique_flat(
             [r.input + r.output for r in model.reactions])
+        col_labels = list([s.name for s in species])
         inputs = np.zeros((len(model.reactions), len(species)))
+        outputs = np.zeros((len(model.reactions), len(species)))
         for i, r in enumerate(model.reactions):
             for s in r.input:
                 inputs[i, species.index(s)] += 1
-        col_labels = list([s.name for s in get_unique_flat(
-            [r.input + r.output for r in model.reactions])])
-        inputs_onehot = deepcopy(inputs)
-        inputs_onehot[inputs_onehot > 0] = 1
-        inputs_onehot = jnp.array(inputs_onehot, dtype=JNP_DTYPE)
+            for s in r.output:
+                outputs[i, species.index(s)] += 1
+        inputs_onehot = make_onehot(inputs)
+        outputs_onehot = make_onehot(outputs)
+        nhot = 
         inputs = jnp.array(inputs, dtype=JNP_DTYPE)
         forward_rates = jnp.array(
             config.get('forward_rates'), dtype=JNP_DTYPE)
