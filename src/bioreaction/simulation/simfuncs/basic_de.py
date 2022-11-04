@@ -9,12 +9,11 @@ def one_step_de_sim(spec_conc: chex.ArrayDevice, reactions: Reactions, delta_t: 
         jnp.power(spec_conc, (reactions.inputs)), axis=1)
     concentration_factors_out = jnp.prod(
         jnp.power(spec_conc, (reactions.outputs)), axis=1)
-    forward_delta = concentration_factors_in * reactions.forward_rates * delta_t
-    reverse_delta = concentration_factors_out * reactions.reverse_rates * delta_t
+    forward_delta = concentration_factors_in * reactions.forward_rates
+    reverse_delta = concentration_factors_out * reactions.reverse_rates
     return spec_conc \
-        + forward_delta @ (reactions.outputs) + reverse_delta @ (reactions.inputs) \
-        - forward_delta @ (reactions.inputs) - \
-        reverse_delta @ (reactions.outputs)
+        + ((forward_delta - reverse_delta) @ (reactions.outputs - reactions.inputs) 
+        )  * delta_t
 
 
 def basic_de_sim(starting_concentration: chex.ArrayDevice, reactions: Reactions, delta_t: float, num_steps: int):

@@ -2,9 +2,9 @@
     "data": "./scripts/playground/simple_circuit.fasta",
     "reactions": {
         "inputs": [
-            ["aRNA1"],
-            ["aRNA2"],
-            ["aRNA3"],
+            [],
+            [],
+            [],
             ["RNA1", "RNA1"],
             ["RNA1", "RNA2"],
             ["RNA1", "RNA3"],
@@ -25,18 +25,18 @@
             ["RNA2 + RNA2"],
             ["RNA2 + RNA3"],
             ["RNA3 + RNA3"],
-            ["dRNA1"],
-            ["dRNA2"],
-            ["dRNA3"]
+            [],
+            [],
+            []
         ]
     },
     "starting_concentration": {
         "dRNA1": 0,
         "dRNA2": 0,
         "dRNA3": 0,
-        "RNA1": 100,
-        "RNA2": 100,
-        "RNA3": 100,
+        "RNA1": 20,
+        "RNA2": 10,
+        "RNA3": 15,
         "RNA1 + RNA1": 0,
         "RNA1 + RNA2": 0,
         "RNA1 + RNA3": 0,
@@ -54,21 +54,11 @@
     ],
     "reverse_rates": [
         0, 0, 0,
-        100000, 100000, 100000, 100000, 100000, 100000,
+        10000, 10000, 10000, 10000, 10000, 10000,
         0, 0, 0
     ],
     "simulation": {
         "delta_t": 0.1,
         "num_steps": 10000
-    },
-    "signal": {
-        "signal": [
-            1,
-            0
-        ],
-        "signal_spec": "raw",
-        "signal_type": "abstract",
-        "total_time": 4,
-        "magnitude": 100
     }
 }
