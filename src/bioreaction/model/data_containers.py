@@ -52,7 +52,8 @@ class Reaction():
     def __init__(self) -> None:
         self.input: List[Species]
         self.output: List[Species]
-        self.base_rate: float
+        self.forward_rate: float
+        self.reverse_rate: float
         #self.environmental: List[Tuple[int,Extrinsics]]
 
 
@@ -75,11 +76,11 @@ class Reactions:
     # n-hot inputs and outputs (again row: reaction, column: species)
     inputs: chex.ArrayDevice
     outputs: chex.ArrayDevice
-    inputs_onehot: chex.ArrayDevice
-    outputs_onehot: chex.ArrayDevice
+    # inputs_onehot: chex.ArrayDevice
+    # outputs_onehot: chex.ArrayDevice
     # Forward and reverse rates for each reaction
-    forward_rates: chex.ArrayDevice
-    reverse_rates: chex.ArrayDevice
+    # forward_rates: chex.ArrayDevice
+    # reverse_rates: chex.ArrayDevice
 
 
 class Extrinsics():
@@ -140,10 +141,8 @@ class QuantifiedReactions():
                 inputs[i, species.index(inp)] += 1
             for inp in r.output:
                 outputs[i, species.index(inp)] += 1
-        forward_rates = jnp.array(
-            per_mol_to_per_molecules(config.get('forward_rates')), dtype=JNP_DTYPE)
-        reverse_rates = jnp.array(
-            per_mol_to_per_molecules(config.get('reverse_rates')), dtype=JNP_DTYPE)
+        forward_rates = jnp.array([r.forward_rate for r in model.reactions])
+        reverse_rates = jnp.array([r.reverse_rate for r in model.reactions])
 
         reactions = Reactions(col_labels=list([s.name for s in species]),
                               inputs=jnp.array(inputs, dtype=JNP_DTYPE),
