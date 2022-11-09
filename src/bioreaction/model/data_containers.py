@@ -79,8 +79,8 @@ class Reactions:
     # inputs_onehot: chex.ArrayDevice
     # outputs_onehot: chex.ArrayDevice
     # Forward and reverse rates for each reaction
-    # forward_rates: chex.ArrayDevice
-    # reverse_rates: chex.ArrayDevice
+    forward_rates: chex.ArrayDevice
+    reverse_rates: chex.ArrayDevice
 
 
 class Extrinsics():
@@ -117,7 +117,6 @@ class QuantifiedReactions():
         self.reactions: Reactions
         self.reactants: List[Reactant]
         self.quantities: chex.ArrayDevice
-        self.rates: chex.ArrayDevice
 
     def init_properties(self, model: BasicModel, config):
         self.reactants = self.init_reactants(model, config)
@@ -147,7 +146,6 @@ class QuantifiedReactions():
         reactions = Reactions(col_labels=list([s.name for s in species]),
                               inputs=jnp.array(inputs, dtype=JNP_DTYPE),
                               outputs=jnp.array(outputs, dtype=JNP_DTYPE),
-                              inputs_onehot=make_onehot(inputs), outputs_onehot=make_onehot(outputs),
                               forward_rates=forward_rates, reverse_rates=reverse_rates)
         return reactions
 

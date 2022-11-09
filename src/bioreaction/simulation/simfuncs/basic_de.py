@@ -4,7 +4,7 @@ import jax.numpy as jnp
 import chex
 
 
-def one_step_de_sim(spec_conc, reactions):
+def one_step_de_sim(spec_conc, reactions: Reactions):
     concentration_factors_in = jnp.prod(
         jnp.power(spec_conc, (reactions.inputs)), axis=1)
     concentration_factors_out = jnp.prod(
@@ -23,3 +23,9 @@ def basic_de_sim(starting_concentration: chex.ArrayDevice, reactions: Reactions,
         step_output = one_step_scan_wrapper(carry, reactions, delta_t)
         return step_output, step_output
     return jax.lax.scan(to_scan, starting_concentration, None, length=num_steps)
+
+
+# ODE Terms
+def bioreaction_sim(t, y, args, reactions, signal, signal_onehot, dt):
+    return one_step_de_sim(spec_conc=y,
+                           reactions=reactions) + signal(t) * signal_onehot
