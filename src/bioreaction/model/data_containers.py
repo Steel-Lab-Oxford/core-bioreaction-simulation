@@ -124,26 +124,24 @@ class QuantifiedReactions():
             [r.quantity for r in self.reactants], dtype=JNP_DTYPE)
         self.reactions = self.init_reactions(model, config)
 
-    def init_reactions(self, model: BasicModel, config: dict):
+    def init_reactions(self, model: BasicModel):
 
         def make_onehot(matrix):
             onehot = deepcopy(matrix)
             onehot[onehot > 0] = 1
             return jnp.array(onehot, dtype=JNP_DTYPE)
 
-        species = get_unique_flat(
-            [r.input + r.output for r in model.reactions])
-        inputs = np.zeros((len(model.reactions), len(species)))
-        outputs = np.zeros((len(model.reactions), len(species)))
+        inputs = np.zeros((len(model.reactions), len(model.species)))
+        outputs = np.zeros((len(model.reactions), len(model.species)))
         for i, r in enumerate(model.reactions):
             for inp in r.input:
-                inputs[i, species.index(inp)] += 1
+                inputs[i, model.species.index(inp)] += 1
             for inp in r.output:
-                outputs[i, species.index(inp)] += 1
+                outputs[i, model.species.index(inp)] += 1
         forward_rates = jnp.array([r.forward_rate for r in model.reactions])
         reverse_rates = jnp.array([r.reverse_rate for r in model.reactions])
 
-        reactions = Reactions(col_labels=list([s.name for s in species]),
+        reactions = Reactions(col_labels=list([s.name for s in model.species]),
                               inputs=jnp.array(inputs, dtype=JNP_DTYPE),
                               outputs=jnp.array(outputs, dtype=JNP_DTYPE),
                               forward_rates=forward_rates, reverse_rates=reverse_rates)
