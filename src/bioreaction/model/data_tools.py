@@ -15,7 +15,7 @@ def pairup_combination(samples: list, astype=list):
     for si in samples:
         for sj in samples:
             combination.append(tuple(sorted([si, sj])))
-    return sorted([astype(s) for s in (set(combination))])
+    return list(sorted([astype(s) for s in (set(combination))]))
 
 
 def make_species(species: List[str], ref_species: Dict[str, Species]):
@@ -54,11 +54,15 @@ def construct_model(config: dict):
     return model
 
 
+def list_wrap(x, inner_type=str):
+    return [inner_type(x)]
+
+
 def construct_model_fromnames(sample_names):
 
     model = BasicModel()
-    inputs = sample_names + pairup_combination(sample_names) + [[]] * len(sample_names)
-    outputs = [[]] * len(sample_names) + pairup_combination(sample_names, astype=str) + sample_names
+    inputs = [[s] for s in sample_names] + pairup_combination(sample_names) + [[]] * len(sample_names)
+    outputs = [[]] * len(sample_names) + pairup_combination(sample_names, astype=list_wrap) + [[s] for s in sample_names]
     ref_species = {s: Species(s) for s in set(
         flatten_listlike(inputs + outputs, safe=True)) if s is not None}
     for idx, (i, o) in enumerate(zip(inputs, outputs)):

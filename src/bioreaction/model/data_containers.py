@@ -123,7 +123,7 @@ class QuantifiedReactions():
         self.reactants = self.init_reactants(model, config)
         self.quantities = jnp.array(
             [r.quantity for r in self.reactants], dtype=JNP_DTYPE)
-        self.reactions = self.init_reactions(model, config)
+        self.reactions = self.init_reactions(model)
 
     def init_reactions(self, model: BasicModel):
 
