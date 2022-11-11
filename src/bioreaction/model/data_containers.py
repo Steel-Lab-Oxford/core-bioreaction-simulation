@@ -25,8 +25,9 @@ class Species():
     the amount of over time.
     """
 
-    def __init__(self, name: str) -> None:
+    def __init__(self, name: str, physical_data: dict = {}) -> None:
         self.name: str = name
+        self.physical_data = physical_data
         #self.identifier : str
         #self.data : Data
 
