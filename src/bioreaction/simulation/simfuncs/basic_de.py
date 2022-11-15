@@ -26,11 +26,6 @@ def basic_de_sim(starting_concentration: chex.ArrayDevice, reactions: Reactions,
 
 
 # ODE Terms
-def bioreaction_sim(t, y, args, reactions, signal, signal_onehot, dt):
-    return one_step_de_sim(spec_conc=y,
-                           reactions=reactions) + signal(t) * signal_onehot
-
-
 def bioreaction_sim(t, y, args, reactions: Reactions, dt, signal, signal_onehot: jnp.ndarray):
     return one_step_de_sim(spec_conc=y,
                            reactions=reactions) + signal(t) * signal_onehot
