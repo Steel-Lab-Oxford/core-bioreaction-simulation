@@ -4,9 +4,8 @@ Framework for defining reactions to simulate through downstream simulations for 
 [Steel Lab Oxford](http://steel.ac/)
 
 
-#         \   ^__^
-#          \  (oo)\_______
-#             (__)\       )\/\
-#                 ||----w |
-#                 ||     ||
-#
+         \   ^__^
+          \  (oo)\_______
+             (__)\       )\/\
+                 ||----w |
+                 ||     ||
