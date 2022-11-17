@@ -52,6 +52,11 @@ def get_unique_flat(listlike):
     u.sort()
     return u
 
+
+def invert_onehot(onehot):
+    return (onehot == 0).astype(onehot.dtype)
+
+
 def per_mol_to_per_molecules(per_mol):
     """ Translate a value from the unit of per moles to per molecules.
     The number of M of mRNA in a cell was calculated using the average 

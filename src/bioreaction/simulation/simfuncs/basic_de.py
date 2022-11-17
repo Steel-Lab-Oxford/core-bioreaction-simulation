@@ -1,7 +1,8 @@
-from bioreaction.model.data_containers import Reactions
 import jax
 import jax.numpy as jnp
 import chex
+from bioreaction.model.data_containers import Reactions
+from bioreaction.misc.misc import invert_onehot
 
 
 def one_step_de_sim(spec_conc, reactions: Reactions):
@@ -28,4 +29,4 @@ def basic_de_sim(starting_concentration: chex.ArrayDevice, reactions: Reactions,
 # ODE Terms
 def bioreaction_sim(t, y, args, reactions: Reactions, dt, signal, signal_onehot: jnp.ndarray):
     return one_step_de_sim(spec_conc=y,
-                           reactions=reactions) + signal(t) * signal_onehot
+                           reactions=reactions) * invert_onehot(signal_onehot) + signal(t) * signal_onehot
