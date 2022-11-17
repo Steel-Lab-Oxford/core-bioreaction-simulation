@@ -1,0 +1,28 @@
+{
+    "data": "./scripts/playground/simple_circuit.fasta",
+    "reactions": {
+        "inputs": [
+            [],
+            ["RNA1"]
+        ],
+        "outputs": [
+            ["RNA1"],
+            []
+        ]
+    },
+    "starting_concentration": {
+        "RNA1": 2
+    },
+    "forward_rates": [
+        10,
+        15
+    ],
+    "reverse_rates": [
+        0,
+        0
+    ],
+    "simulation": {
+        "delta_t": 0.1,
+        "num_steps": 10000
+    }
+}
