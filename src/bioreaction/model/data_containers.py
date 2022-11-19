@@ -24,7 +24,6 @@ class Species():
     A chemical, protein, or other item which we desire to model
     the amount of over time.
     """
-
     def __init__(self, name: str, physical_data: dict = {}) -> None:
         self.name: str = name
         self.physical_data = physical_data
