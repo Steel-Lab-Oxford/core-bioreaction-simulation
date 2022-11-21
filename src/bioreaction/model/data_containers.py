@@ -3,7 +3,7 @@ from typing import Any, List
 from jax import numpy as jnp
 import numpy as np
 import chex
-
+from dataclasses import dataclass
 from bioreaction.misc.misc import get_unique_flat, per_mol_to_per_molecules
 
 
@@ -75,6 +75,59 @@ class Extrinsics():
     """
     def __init__(self) -> None:
         pass
+
+@dataclass
+class OtherFactor():
+    """
+    Represents some non-species quantity,
+    such as the output of controller,
+    or abundence of some cellualar resources.
+    Probably a real number? 🙂 idk lol
+    """
+    name: str
+
+@dataclass
+class OUProcess():
+    """
+    Some other factor follows an OU process. 
+    Simple
+    """
+    restoring_rate: float
+    noise_scale: float
+
+    @classmethod
+    def scale_std_init(time_scale: float, y_scale: float):
+        """
+        Define an OU process by the time scale, and the
+        y scale. More natural and understandable. 
+        """
+        r_rate = 1.0/time_scale
+        sigma = y_scale * np.sqrt(2* r_rate)
+        return OUProcess(restoring_rate=r_rate, noise_scale=sigma)
+
+@dataclass
+class ExtraReactionEffect():
+    """
+    Some other factor affects the rate of some reaction. 
+    So the rate of reaction will be multiplied by exp(k*other_factor)
+    """
+    factor : OtherFactor
+    target_reaction : Reaction
+    forward_strength: float
+    backward_stength: float = 0.0
+
+@dataclass
+class Impulse():
+    """
+    Represents a fixed amount of the target appearing 
+    at a certain point in time. 
+    """
+    target: Species
+    delta_target: float
+    time: float
+    impulse_width: float
+
+
 
 
 class BasicModel():
