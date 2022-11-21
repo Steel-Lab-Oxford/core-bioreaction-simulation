@@ -48,12 +48,11 @@ class Reaction():
     Some process which converts species into other 
     species. Mostly a symbolic class.
     """
-
-    def __init__(self) -> None:
-        self.input: List[Species]
-        self.output: List[Species]
-        self.forward_rate: float
-        self.reverse_rate: float
+    def __init__(self, input_sp: List[Species], output: List[Species], fr : float, rr: float = 0.0) -> None:
+        self.input = input_sp
+        self.output = output
+        self.forward_rate = fr
+        self.reverse_rate = rr
         #self.environmental: List[Tuple[int,Extrinsics]]
 
 
@@ -61,11 +60,31 @@ class Reactant():
     """
     Translate between species and reaction
     """
-
     def __init__(self) -> None:
         self.species: Species
         self.quantity: Any
         self.units: Unit
+
+
+
+
+class Extrinsics():
+    """
+    Other factors which we desire to model, which are relevent to our
+    process.
+    """
+    def __init__(self) -> None:
+        pass
+
+
+class BasicModel():
+    """
+    A class representing a collection of species, reactions, and other facts.
+    This should represent the abstract notion of some mathematic model of a system.
+    """
+    def __init__(self, species: List[Species] ,reactions: List[Reaction] ) -> None:
+        self.species = species
+        self.reactions = reactions
 
 
 @chex.dataclass
@@ -81,28 +100,6 @@ class Reactions:
     # Forward and reverse rates for each reaction
     forward_rates: chex.ArrayDevice
     reverse_rates: chex.ArrayDevice
-
-
-class Extrinsics():
-    """
-    Other factors which we desire to model, which are relevent to our
-    process.
-    """
-
-    def __init__(self) -> None:
-        pass
-
-
-class BasicModel():
-    """
-    A class representing a collection of species, reactions, and other facts.
-    This should represent the abstract notion of some mathematic model of a system.
-    """
-
-    def __init__(self) -> None:
-
-        self.species: List[Species] = []
-        self.reactions: List[Reaction] = []
 
 
 class QuantifiedReactions():
