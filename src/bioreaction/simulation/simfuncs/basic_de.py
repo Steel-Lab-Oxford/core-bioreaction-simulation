@@ -43,8 +43,10 @@ def bioreaction_sim(t, y, args, reactions: Reactions, signal, signal_onehot: jnp
 
 
 # ODE Terms
-def bioreaction_sim_expanded(t, y, args, reactions: Reactions, signal, signal_onehot: jnp.ndarray, inverse_onehot: jnp.ndarray):
+def bioreaction_sim_expanded(t, y, args, inputs, outputs, forward_rates, 
+    reverse_rates, signal, signal_onehot: jnp.ndarray, inverse_onehot: jnp.ndarray):
     return one_step_de_sim_expanded(
-        spec_conc=y, inputs=reactions.inputs,
-        forward_rates=reactions.forward_rates,
-        reverse_rates=reactions) * inverse_onehot + signal(t) * signal_onehot
+        spec_conc=y, inputs=inputs,
+        outputs=outputs,
+        forward_rates=forward_rates,
+        reverse_rates=reverse_rates) * inverse_onehot + signal(t) * signal_onehot
