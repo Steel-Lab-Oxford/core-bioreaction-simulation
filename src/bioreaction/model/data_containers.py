@@ -5,6 +5,7 @@ import numpy as np
 import chex
 from dataclasses import dataclass
 from bioreaction.misc.misc import get_unique_flat, per_mol_to_per_molecules
+from typing import Callable
 
 
 JNP_DTYPE = jnp.float32
@@ -64,8 +65,6 @@ class Reactant():
         self.species: Species
         self.quantity: Any
         self.units: Unit
-
-
 
 
 class Extrinsics():
@@ -128,6 +127,41 @@ class Impulse():
     impulse_width: float
 
 
+@dataclass
+class ControlledFactor():
+    """
+    Represents a fixed amount of the target appearing 
+    at a certain in timepoint . 
+    """
+    targets: List[OtherFactor]
+    observations: List[Species]
+    control_function: Callable[ [chex.ArrayDevice] , chex.ArrayDevice]
+    # how often you observe the system
+    observation_period: float
+    # how many observations before effect happen
+    observation_delay: int
+    # We have a tanh backend, with these effects in mind.
+    # Hence we effectively put a tanh on whatever the network outputs. 
+    # The reason for a list is because if we have a neural network 
+    # controlling lots of things at once, with different scales. 
+    output_max : List[float]
+    output_min: List[float]
+    output_sensitivity: List[float]
+
+
+@dataclass
+class MedModel():
+    """
+    A slightly better, more complete model.
+    Allows for more good stuff
+    """
+    species : List[Species]
+    reactions: List[Reaction]
+    other_factors: List[OtherFactor]
+    reaction_extrinsics: List[ExtraReactionEffect]
+    ou_effects: List[OUProcess]
+    impuluses: List[Impulse]
+    controllers: List[ControlledFactor]
 
 
 class BasicModel():
