@@ -43,19 +43,16 @@ class Species():
     def __repr__(self) -> str:
         return 'Species: ' + str(self.name)
 
-
+@dataclass
 class Reaction():
     """
     Some process which converts species into other 
     species. Mostly a symbolic class.
     """
-    def __init__(self, input_sp: List[Species], output: List[Species], fr : float, rr: float = 0.0) -> None:
-        self.input = input_sp
-        self.output = output
-        self.forward_rate = fr
-        self.reverse_rate = rr
-        #self.environmental: List[Tuple[int,Extrinsics]]
-
+    input: List[Species]
+    output: List[Species]
+    forward_rate : float
+    reverse_rate: float = 0.0
 
 class Reactant():
     """
@@ -91,18 +88,19 @@ class OUProcess():
     Some other factor follows an OU process. 
     Simple
     """
+    target: OtherFactor
     restoring_rate: float
     noise_scale: float
 
     @classmethod
-    def scale_std_init(time_scale: float, y_scale: float):
+    def scale_std_init(self, target: OtherFactor, time_scale: float, y_scale: float):
         """
         Define an OU process by the time scale, and the
         y scale. More natural and understandable. 
         """
         r_rate = 1.0/time_scale
         sigma = y_scale * np.sqrt(2* r_rate)
-        return OUProcess(restoring_rate=r_rate, noise_scale=sigma)
+        return OUProcess(target = target, restoring_rate=r_rate, noise_scale=sigma)
 
 @dataclass
 class ExtraReactionEffect():
