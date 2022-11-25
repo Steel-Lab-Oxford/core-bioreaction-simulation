@@ -3,7 +3,7 @@ import chex
 import jax.numpy as jnp
 import numpy as np
 import jax
-from typing import Any, List
+from typing import Any, List, Callable
 
 @chex.dataclass
 class Reactions:
@@ -16,28 +16,14 @@ class Reactions:
     forward_rates: chex.ArrayDevice
     reverse_rates: chex.ArrayDevice
 
-
-
-@chex.dataclass
-class Impulse:
-    target: int
-    scale: float
-    time_spread: float
-    time: float
-
-@chex.dataclass
-class Impulse:
-    target: int
-    scale: float
-    time_spread: float
-    time: float
+@
 
 
 @chex.dataclass
 class MedSimModel:
     reactions: Reactions
     other_factor_reaction_effects: chex.ArrayDevice
-    impulses: List[Impulse]
+    species_impulses: Callable[[float], chex.ArrayDevice]
 
 
 
@@ -52,10 +38,12 @@ class MedSimModel:
 
 
 @chex.dataclass
-class BasicSimState:
+class MedSimState:
     # This just be the state lol
     concentrations: chex.ArrayDevice
     other_factors: chex.ArrayDevice
+	stored_control: chex.ArrayDevice
+	time: float
 
 
 @chex.dataclass
@@ -63,6 +51,9 @@ class BasicSimParams:
     delta_t: float
     t_start: float
     t_end: float
+	poisson_sim_reactions: chex.ArrayDevice
+	brownian_sim_reaction: chex.ArrayDevice
+	#Rest are going to be modelled continuously 
 
 
 def get_reactions(input_model : bioreaction.data_containers.MedModel) -> Reactions:
@@ -83,6 +74,15 @@ def get_reactions(input_model : bioreaction.data_containers.MedModel) -> Reactio
 
     return Reactions(inputs = jnp.array(inputs), outputs = jnp.array(outputs), 
                     forward_rates = jnp.array(forward_rates), reverse_rates = jnp.array(reverse_rates))
+					
+def get_base_reaction_rates(spec_conc: chex.ArrayDevice, reactions: Reactions):
+    concentration_factors_in = jnp.prod(
+        jnp.power(spec_conc, (reactions.inputs)), axis=1)
+    concentration_factors_out = jnp.prod(
+        jnp.power(spec_conc, (reactions.outputs)), axis=1)
+    forward_delta = concentration_factors_in * reactions.forward_rates
+    reverse_delta = concentration_factors_out * reactions.reverse_rates
+    return (forward_delta - reverse_delta) @ (reactions.outputs - reactions.inputs)
 
 
 

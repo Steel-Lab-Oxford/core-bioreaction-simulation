@@ -1,11 +1,11 @@
 from copy import deepcopy
-from typing import Any, List
+from typing import Any, List, Callable
 from jax import numpy as jnp
 import numpy as np
 import chex
 from dataclasses import dataclass
 from bioreaction.misc.misc import get_unique_flat, per_mol_to_per_molecules
-from typing import Callable
+
 
 
 JNP_DTYPE = jnp.float32
