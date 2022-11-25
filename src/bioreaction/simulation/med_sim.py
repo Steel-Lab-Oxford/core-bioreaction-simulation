@@ -4,6 +4,8 @@ import jax.numpy as jnp
 import numpy as np
 import jax
 from typing import Any, List, Callable
+import diffrax as dfx
+import jax.random as jr
 
 @chex.dataclass
 class Reactions:
@@ -42,17 +44,17 @@ class MedSimState:
     # This just be the state lol
     concentrations: chex.ArrayDevice
     other_factors: chex.ArrayDevice
-	stored_control: chex.ArrayDevice
-	time: float
+    stored_control: chex.ArrayDevice
+    time: float
 
 
 @chex.dataclass
-class BasicSimParams:
+class MedSimParams:
     delta_t: float
     t_start: float
     t_end: float
-	poisson_sim_reactions: chex.ArrayDevice
-	brownian_sim_reaction: chex.ArrayDevice
+    poisson_sim_reactions: chex.ArrayDevice
+    brownian_sim_reaction: chex.ArrayDevice
 	#Rest are going to be modelled continuously 
 
 
@@ -85,4 +87,24 @@ def get_base_reaction_rates(spec_conc: chex.ArrayDevice, reactions: Reactions):
     return (forward_delta - reverse_delta) @ (reactions.outputs - reactions.inputs)
 
 
+class BetterPoisson(dfx.AbstractPath):
+    key: "jr.PRNGKey"
 
+    @property
+    def t0(self):
+        return None
+
+    @property
+    def t1(self):
+        return None
+
+    def evaluate(self, t0, t1=None, left=True, *, y):
+        t0_ = dfx.misc.force_bitcast_convert_type(t0, jnp.int32)
+        t1_ = dfx.misc.force_bitcast_convert_type(t1, jnp.int32)
+        new_key = jr.fold_in(self.key, t0_)
+        new_key = jr.fold_in(new_key, t1_)
+        return jr.poisson(new_key, y(t0)*(t1-t0))
+
+
+
+def simulate_chunk(init_state: MedSimState, model: MedSimModel, params: MedSimParams) -> chex.ArrayDevice:
