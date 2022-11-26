@@ -1,8 +1,9 @@
 import jax
 import jax.numpy as jnp
 import chex
-from bioreaction.model.data_containers import Reactions
-from bioreaction.misc.misc import invert_onehot
+
+from ...model.data_containers import Reactions
+from ...misc.misc import invert_onehot
 
 
 def one_step_de_sim(spec_conc, reactions: Reactions):

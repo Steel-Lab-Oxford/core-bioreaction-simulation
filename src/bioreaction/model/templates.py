@@ -3,10 +3,9 @@ A files with a bunch of useful templates, to make
 testing/doing stuff more easy.
 """
 
-import bioreaction
-from bioreaction.model.data_containers import *
 
-
+from .data_containers import Species
+from .data_containers import *
 
 def GeneralMedSim():
     """

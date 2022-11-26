@@ -1,8 +1,7 @@
 
-
 from typing import Dict, List
-from bioreaction.model.data_containers import BasicModel, Reaction, Species
-from bioreaction.misc.misc import flatten_listlike, get_unique_flat, per_mol_to_per_molecules
+from .data_containers import BasicModel, Reaction, Species
+from ..misc.misc import flatten_listlike, get_unique_flat, per_mol_to_per_molecules
 import jax.numpy as jnp
 
 

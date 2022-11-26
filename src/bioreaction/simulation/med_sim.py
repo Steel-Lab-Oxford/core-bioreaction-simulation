@@ -1,4 +1,4 @@
-import bioreaction
+
 import chex
 import jax.numpy as jnp
 import numpy as np
@@ -9,6 +9,8 @@ import diffrax as dfx
 import jax.random as jr
 import equinox as eqx
 import jax.tree_util as jtu
+from ..model import data_containers
+
 
 @chex.dataclass
 class Reactions:
@@ -52,15 +54,12 @@ class MedSimInternalModel:
 
     # controllers: List[ControlledFactor]
 
-
-
 @chex.dataclass
 class MedSimState:
     # This just be the state lol
     int_state: MedSimInternelState
     stored_control: chex.ArrayDevice
     time: float
-
 
 @chex.dataclass
 class MedSimParams:
@@ -71,7 +70,7 @@ class MedSimParams:
     brownian_sim_reaction: chex.ArrayDevice
 	#Rest are going to be modelled continuously 
 
-def get_OF(input_model : bioreaction.data_containers.MedModel) -> tuple[OFModel, OFEffects]:
+def get_OF(input_model : data_containers.MedModel) -> tuple[OFModel, OFEffects]:
     """
     gives the ou stuff
     """
@@ -103,7 +102,7 @@ def get_OF(input_model : bioreaction.data_containers.MedModel) -> tuple[OFModel,
 
     return (moddy, effecty)
 
-def get_impulse_func(input_model: bioreaction.data_containers.MedModel) ->  Callable[[float], MedSimInternelState]:
+def get_impulse_func(input_model: data_containers.MedModel) ->  Callable[[float], MedSimInternelState]:
     sp_num = len(input_model.species)
     of_num = len(input_model.other_factors)
     imp_number = len(input_model.impuluses)
@@ -124,10 +123,7 @@ def get_impulse_func(input_model: bioreaction.data_containers.MedModel) ->  Call
     return lambda t : MedSimInternelState(concentrations =   (1.0 + jnp.tanh((t - imp_times)/time_widths  ) ) @ con_matrix / 2.0
                                            , other_factors = np.zeros(of_num) )
 
-
-
-
-def get_reactions(input_model : bioreaction.data_containers.MedModel) -> Reactions:
+def get_reactions(input_model : data_containers.MedModel) -> Reactions:
     """
     Gives the reaction object thingy
     """
@@ -149,11 +145,13 @@ def get_reactions(input_model : bioreaction.data_containers.MedModel) -> Reactio
     return Reactions(inputs = jnp.array(inputs), outputs = jnp.array(outputs), 
                     forward_rates = jnp.array(forward_rates), reverse_rates = jnp.array(reverse_rates))
 
-def get_int_med_model(input_model : bioreaction.data_containers.MedModel) -> MedSimInternalModel:
+def get_int_med_model(input_model : data_containers.MedModel) -> MedSimInternalModel:
     reacts = get_reactions(input_model)
     of_mod, of_effects = get_OF(input_model)
     imp_func = get_impulse_func(input_model)
     return MedSimInternalModel(reactions = reacts, other_factor_noise_model = of_mod, of_reaction_effects = of_effects, species_impulses = imp_func)
+
+
 
 def get_base_reaction_rates(spec_conc: chex.ArrayDevice, reactions: Reactions):
     concentration_factors_in = jnp.prod(
@@ -166,16 +164,17 @@ def get_base_reaction_rates(spec_conc: chex.ArrayDevice, reactions: Reactions):
 
 def get_total_reaction_rates(state: MedSimInternelState, model : MedSimInternalModel) -> chex.ArrayDevice:
     base_rate = get_base_reaction_rates(state.concentrations, model.reactions)
-    extra_rate = jnp.exp(model.other_factor_reaction_effects @ state.other_factors)
+    extra_rate = jnp.exp(model.of_reaction_effects.forward @ state.other_factors)
     return base_rate * extra_rate 
 
 
 class BasicPoisson(dfx.AbstractPath):
     """
-    Just getting something to work lol
+    I give up, this is for reactions only lol
     """
     key: "jr.PRNGKey"
-    transf_func: Callable[[PyTree[Array]], PyTree[Array]] = lambda x : x
+    transf_func: Callable[[PyTree[Array]], Array] = lambda x : x
+    out_reshaper: Callable[ [Array], PyTree[Array] ] = lambda x : x
 
     @property
     def t0(self):
@@ -191,6 +190,8 @@ class BasicPoisson(dfx.AbstractPath):
         new_key = jr.fold_in(self.key, t0_)
         new_key = jr.fold_in(new_key, t1_)
         return jr.poisson(new_key, self.transf_func(y(t0))*(t1-t0)   )
+
+
 
 _sentinel = object()
 
@@ -244,56 +245,172 @@ class TauLeapingSolutionDependentSolver(dfx.AbstractSolver):
                 return x
 
         terms = jtu.tree_map(_bind_state, terms, is_leaf=is_control)
-        return self.solver.step(terms, t0, t1, y0, args, solver_state, made_jump)
+
+        new_y = jax.tree_util.tree_map(jax.nn.relu, y0)
+        return self.solver.step(terms, t0, t1, new_y, args, solver_state, made_jump)
 
     def func(self, terms, t0, y0, args):
         return self.solver.func(terms, t0, y0, args)
 
 
+def get_f_b_rates(state: MedSimInternelState, model: MedSimInternalModel):
+    concentration_factors_in = jnp.prod(
+        jnp.power(state.concentrations, (model.reactions.inputs)), axis=1)
+    concentration_factors_out = jnp.prod(
+        jnp.power(state.concentrations, (model.reactions.outputs)), axis=1)
+    forward_base = concentration_factors_in * model.reactions.forward_rates
+    reverse_base = concentration_factors_out * model.reactions.reverse_rates
+    forward_extra = jnp.exp(model.of_reaction_effects.forward @ state.other_factors)
+    reverse_extra = jnp.exp(model.of_reaction_effects.backward @ state.other_factors)
+    return forward_base*forward_extra , reverse_base * reverse_extra
+
+def get_dt_func(model: MedSimInternalModel, params: MedSimParams):
+    def dt_term(t, y: MedSimInternelState, args):
+        f_rate, b_rate = get_f_b_rates(y, model)
+        net_rate = (f_rate - b_rate) @ (model.reactions.outputs - model.reactions.inputs) 
+        conc_masked_rates = net_rate * (1 - params.poisson_sim_reactions)
+        other_restore = -1.0 * model.other_factor_noise_model.restoring_rates * y.other_factors
+
+        return MedSimInternelState(concentrations = conc_masked_rates, other_factors = other_restore)
+    return dt_term
+
+def get_brown_noise_func(model: MedSimInternalModel, params: MedSimParams):
+    def brown_noise_term(t, y:MedSimInternelState, args):
+        f_rate, b_rate = get_f_b_rates(y, model)
+        noise_field = jnp.sqrt(f_rate + b_rate) * (model.reactions.outputs - model.reactions.inputs).T
+        has_noise_mask = (1 - params.poisson_sim_reactions) * params.brownian_sim_reaction
+        masked_noise_field = (has_noise_mask * noise_field.T).T
+
+        other_noise_field = jnp.diag(model.other_factor_noise_model.sigmas)
+        return MedSimInternelState(concentrations = masked_noise_field, other_factors = other_noise_field)
+    return brown_noise_term
+
+def get_brown_noise_tree(key, model: MedSimInternalModel, params: MedSimParams):
+    N_reacts = model.reactions.forward_rates.shape
+    N_o_facts = model.other_factor_noise_model.restoring_rates.shape
+
+    conc_shape = jax.ShapeDtypeStruct( N_reacts, jnp.float32)
+    other_shape = jax.ShapeDtypeStruct( N_o_facts, jnp.float32)
+
+    noise_shape = MedSimInternelState(concentrations = conc_shape, other_factors = other_shape)
+    return dfx.VirtualBrownianTree(params.t_start, params.t_end, tol = params.delta_t * 0.1, shape = noise_shape, key =key)
+
+class ReactionPoisson(dfx.AbstractPath):
+    """
+    Just getting something to work lol
+    """
+    key: "jr.PRNGKey"
+    model : MedSimInternalModel
+    params: MedSimParams
+
+    @property
+    def t0(self):
+        return None
+
+    @property
+    def t1(self):
+        return None
+
+    def evaluate(self, t0, t1=None, left=True, *, y):
+        t0_ = dfx.misc.force_bitcast_convert_type(t0, jnp.int32)
+        t1_ = dfx.misc.force_bitcast_convert_type(t1, jnp.int32)
+        new_key = jr.fold_in(self.key, t0_)
+        new_key2 = jr.fold_in(new_key, t1_)
+        forw_rate, back_rate = get_f_b_rates(y(t0), self.model)
+        dt = t1-t0
+        k1, k2 = jr.split(new_key2)
+        forward_react_number = jr.poisson(k1, forw_rate*dt)
+        backward_react_number = jr.poisson(k2, back_rate*dt)
+        delta_react = forward_react_number - backward_react_number
+        return MedSimInternelState(concentrations = delta_react, other_factors = 0.0)
+
+def get_poisson_func(model: MedSimInternalModel, params: MedSimParams):
+    react_delta = model.reactions.outputs - model.reactions.inputs 
+    has_mask = params.poisson_sim_reactions
+    masked_react_mat = (has_mask * react_delta).T
+    other_factor_stuff = jnp.zeros(model.other_factor_noise_model.restoring_rates.shape)
+    return lambda t,y,args : MedSimInternelState(concentrations = masked_react_mat, other_factors = other_factor_stuff)
+
+
+class DumbControlPath(dfx.AbstractPath):
+    model : MedSimInternalModel
+    params: MedSimParams
+
+    @property
+    def t0(self):
+        return None
+
+    @property
+    def t1(self):
+        return None
+
+    def evaluate(self, t0, t1, left: bool = True) -> PyTree:
+        t1_val = self.model.species_impulses(t1)
+        t0_val = self.model.species_impulses(t0)
+        delta = jax.tree_util.tree_map(lambda a,b : a-b , t1_val, t0_val)
+        return delta
+
+def get_impulse_term(model: MedSimInternalModel, params: MedSimParams):
+    def func(t,y,args):
+        conc_part = jnp.ones(params.poisson_sim_reactions.shape)
+        of_part = jnp.zeros(model.other_factor_noise_model.restoring_rates.shape)
+        return MedSimInternelState(concentrations= conc_part, other_factors = of_part)
+    control = DumbControlPath(model, params)
+    return dfx.WeaklyDiagonalControlTerm(func, control)
+
 def simulate_chunk(key : jr.PRNGKey, init_state: MedSimInternelState, model: MedSimInternalModel, params: MedSimParams) -> chex.ArrayDevice:
     k1, k2, k3 = jr.split(key, 3)
+
+    dt_func = get_dt_func(model, params)
+    time_term = dfx.ODETerm(dt_func)
+
+    brown_func = get_brown_noise_func(model, params)
+    brown_tree = get_brown_noise_tree(k1, model, params)
+    brown_term = dfx.ControlTerm(brown_func, brown_tree)
+
+    poiss_path = ReactionPoisson(k2, model, params)
+    poiss_func = get_poisson_func(model, params)
+    poiss_term = dfx.ControlTerm(poiss_func, SolutionDependentControl(poiss_path))
+
+    impulse_term = get_impulse_term(model, params)
+
+    terms = dfx.MultiTerm(poiss_term, time_term, brown_term, impulse_term)
+
+    solver = TauLeapingSolutionDependentSolver(dfx.Euler())
     
-    def dt_term(t, y: MedSimInternelState, args):
-        total_rate = get_total_reaction_rates(y, model)
-        masked_rates = total_rate * (1 - params.poisson_sim_reactions)
-        implied_rate =  masked_rates @ (model.reactions.outputs - model.reactions.inputs)
-        
-        other_restore = -1.0 * model.other_factor_noise_model.restoring_rates * y.other_factors
-        return MedSimInternelState(concentrations = implied_rate, other_factors = other_restore)
+    saveat = dfx.SaveAt(ts = jnp.linspace(params.t_start, params.t_end, 100))
+    return dfx.diffeqsolve(terms, solver, t0 = params.t_start, t1 = params.t_end, dt0 = params.delta_t, y0=init_state, saveat=saveat)
 
-    def brown_noise_term(t, y:MedSimInternelState, args):
-        total_rate = get_total_reaction_rates(y, model)
-        masked_rates = total_rate * (1 - params.poisson_sim_reactions) * (params.brownian_sim_reaction)
-        spec_noise_scale = jnp.sqrt(masked_rates) @ (model.reactions.outputs - model.reactions.inputs)
-        other_noise =  model.other_factor_noise_model.sigmas
-        return MedSimInternelState(concentrations = spec_noise_scale, other_factors = other_noise)
+def debug_simulate_chunk(key : jr.PRNGKey, init_state: MedSimInternelState, model: MedSimInternalModel, params: MedSimParams) -> chex.ArrayDevice:
+    k1, k2, k3 = jr.split(key, 3)
+
+    dt_func = get_dt_func(model, params)
+    time_term = dfx.ODETerm(dt_func)
+
+    brown_func = get_brown_noise_func(model, params)
+    brown_tree = get_brown_noise_tree(k1, model, params)
+    brown_term = dfx.ControlTerm(brown_func, brown_tree)
+
+    poiss_path = ReactionPoisson(k2, model, params)
+    poiss_func = get_poisson_func(model, params)
+    poiss_term = dfx.ControlTerm(poiss_func, SolutionDependentControl(poiss_path))
+
+    impulse_term = get_impulse_term(model, params)
+
+    terms = dfx.MultiTerm(poiss_term, time_term, brown_term, impulse_term)
+
+    solver = TauLeapingSolutionDependentSolver(dfx.Euler())
     
-    def poiss_trans_func(y: MedSimInternelState) -> chex.ArrayDevice:
-        total_rate = get_total_reaction_rates(y, model)
-        return total_rate * (params.poisson_sim_reactions)
+    saveat = dfx.SaveAt(ts = jnp.linspace(params.t_start, params.t_end, 100))
+    return {"t_f":dt_func, "t_t":time_term, "b_f": brown_func,
+     "b_p":brown_tree, "b_t" : brown_term, "p_p" : poiss_path, "p_f": poiss_func, "p_t": poiss_term, "i_t": impulse_term }
 
-    poiss_out_part = lambda t,y,args : (model.reactions.outputs - model.reactions.inputs)
-
-    poiss_term = dfx.ControlTerm(poiss_out_part, SolutionDependentControl(BasicPoisson(k2, poiss_trans_func)))
-    time_term = dfx.ODETerm(dt_term)
-
-    brown_noise = dfx.UnsafeBrownianPath((1,), k1)
-
-    brown_term = dfx.ControlTerm(brown_noise_term, brown_noise)
-    #brown_noise = dfx.VirtualBrownianTree(params.t_start, params.t_end, tol = params.delta_t * 1e-2, shape = (), key = k1)
-
-    #terms = dfx.MultiTerm(poiss_term, time_term, brown_term)
-    #solver = TauLeapingSolutionDependentSolver(dfx.Euler())
-
+def very_basic_de(init_state: MedSimInternelState):
     dumb_term = lambda t,y,args : init_state
     terms = dfx.ODETerm(dumb_term)
     solver = dfx.Euler()
 
     #Bad times :)))
-    saveat = dfx.SaveAt(ts = jnp.linspace(params.t_start, params.t_end, 100))
-    return dfx.diffeqsolve(terms, solver, t0 = params.t_start, t1 = params.t_end, dt0 = params.delta_t, y0=init_state, saveat=saveat)
-    
-
-
-    
+    saveat = dfx.SaveAt(ts = jnp.linspace(0,1, 100))
+    return dfx.diffeqsolve(terms, solver, t0 = 0, t1 = 1, dt0 = 0.01, y0=init_state, saveat=saveat)
     

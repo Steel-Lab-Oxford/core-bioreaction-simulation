@@ -1,8 +1,10 @@
-import bioreaction
+
 import chex
 import jax.numpy as jnp
 import numpy as np
 import jax
+
+from ..model import data_containers
 
 @chex.dataclass
 class BasicSimModel:
@@ -26,7 +28,7 @@ class BasicSimParams:
     total_time: float
 
 
-def convert_model(input_model : bioreaction.data_containers.BasicModel) -> BasicSimModel:
+def convert_model(input_model : data_containers.BasicModel) -> BasicSimModel:
     sp_num = len(input_model.species)
     react_num = len(input_model.reactions)
     sp_list = input_model.species
