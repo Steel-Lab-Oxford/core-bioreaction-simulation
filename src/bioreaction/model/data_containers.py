@@ -3,7 +3,7 @@ from typing import Any, List, Callable
 from jax import numpy as jnp
 import numpy as np
 import chex
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from ..misc.misc import  get_unique_flat, per_mol_to_per_molecules
 
 JNP_DTYPE = jnp.float32
@@ -144,7 +144,6 @@ class ControlledFactor():
     output_min: List[float]
     output_sensitivity: List[float]
 
-
 @dataclass
 class MedModel():
     """
@@ -153,11 +152,11 @@ class MedModel():
     """
     species : List[Species]
     reactions: List[Reaction]
-    other_factors: List[OtherFactor]
-    reaction_extrinsics: List[ExtraReactionEffect]
-    ou_effects: List[OUProcess]
-    impuluses: List[Impulse]
-    controllers: List[ControlledFactor]
+    other_factors: List[OtherFactor]  = field(default_factory=list)
+    reaction_extrinsics: List[ExtraReactionEffect] = field(default_factory=list)
+    ou_effects: List[OUProcess] = field(default_factory=list)
+    impuluses: List[Impulse] = field(default_factory=list)
+    controllers: List[ControlledFactor] = field(default_factory=list)
 
 
 class BasicModel():

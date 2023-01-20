@@ -267,22 +267,21 @@ def get_f_b_rates(state: MedSimInternelState, model: MedSimInternalModel):
 def get_dt_func(model: MedSimInternalModel, params: MedSimParams):
     def dt_term(t, y: MedSimInternelState, args):
         f_rate, b_rate = get_f_b_rates(y, model)
-        net_rate = (f_rate - b_rate) @ (model.reactions.outputs - model.reactions.inputs) 
-        conc_masked_rates = net_rate * (1 - params.poisson_sim_reactions)
+        masked_rates = (f_rate - b_rate) * (1 - params.poisson_sim_reactions)
+        net_rate = masked_rates @ (model.reactions.outputs - model.reactions.inputs) 
         other_restore = -1.0 * model.other_factor_noise_model.restoring_rates * y.other_factors
 
-        return MedSimInternelState(concentrations = conc_masked_rates, other_factors = other_restore)
+        return MedSimInternelState(concentrations = net_rate, other_factors = other_restore)
     return dt_term
 
 def get_brown_noise_func(model: MedSimInternalModel, params: MedSimParams):
     def brown_noise_term(t, y:MedSimInternelState, args):
         f_rate, b_rate = get_f_b_rates(y, model)
-        noise_field = jnp.sqrt(f_rate + b_rate) * (model.reactions.outputs - model.reactions.inputs).T
         has_noise_mask = (1 - params.poisson_sim_reactions) * params.brownian_sim_reaction
-        masked_noise_field = (has_noise_mask * noise_field.T).T
+        noise_field = jnp.sqrt(f_rate + b_rate) * has_noise_mask * (model.reactions.outputs - model.reactions.inputs).T
 
         other_noise_field = jnp.diag(model.other_factor_noise_model.sigmas)
-        return MedSimInternelState(concentrations = masked_noise_field, other_factors = other_noise_field)
+        return MedSimInternelState(concentrations = noise_field, other_factors = other_noise_field)
     return brown_noise_term
 
 def get_brown_noise_tree(key, model: MedSimInternalModel, params: MedSimParams):
@@ -327,7 +326,7 @@ class ReactionPoisson(dfx.AbstractPath):
 def get_poisson_func(model: MedSimInternalModel, params: MedSimParams):
     react_delta = model.reactions.outputs - model.reactions.inputs 
     has_mask = params.poisson_sim_reactions
-    masked_react_mat = (has_mask * react_delta).T
+    masked_react_mat = has_mask * react_delta.T
     other_factor_stuff = jnp.zeros(model.other_factor_noise_model.restoring_rates.shape)
     return lambda t,y,args : MedSimInternelState(concentrations = masked_react_mat, other_factors = other_factor_stuff)
 
@@ -352,7 +351,7 @@ class DumbControlPath(dfx.AbstractPath):
 
 def get_impulse_term(model: MedSimInternalModel, params: MedSimParams):
     def func(t,y,args):
-        conc_part = jnp.ones(params.poisson_sim_reactions.shape)
+        conc_part = jnp.ones(model.reactions.inputs.shape[1])
         of_part = jnp.zeros(model.other_factor_noise_model.restoring_rates.shape)
         return MedSimInternelState(concentrations= conc_part, other_factors = of_part)
     control = DumbControlPath(model, params)
