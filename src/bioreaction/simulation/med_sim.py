@@ -215,7 +215,7 @@ class SolutionDependentControl(dfx.AbstractPath):
     def evaluate(self, t0, t1=None, left=True):
         return self.control.evaluate(t0, t1, left, y=self.y)
 
-class TauLeapingSolutionDependentSolver(dfx.AbstractSolver):
+class TauLeapingSolutionDependentSolver(dfx.AbstractItoSolver):
     solver: dfx.AbstractSolver
 
     @property
