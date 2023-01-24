@@ -46,13 +46,19 @@ class MedSimInternelState:
     other_factors: chex.ArrayDevice
 
 @chex.dataclass
+class MedSimInternalImpulse:
+    time: float
+    impulse_width: float
+    delta_species: MedSimInternelState
+
+@chex.dataclass
 class MedSimInternalModel:
     reactions: Reactions
     other_factor_noise_model: OFModel
     of_reaction_effects: OFEffects
-    species_impulses: Callable[[float], MedSimInternelState]
-
+    species_impulses: MedSimInternalImpulse
     # controllers: List[ControlledFactor]
+
 
 @chex.dataclass
 class MedSimState:
@@ -102,12 +108,10 @@ def get_OF(input_model : data_containers.MedModel) -> tuple[OFModel, OFEffects]:
 
     return (moddy, effecty)
 
-def get_impulse_func(input_model: data_containers.MedModel) ->  Callable[[float], MedSimInternelState]:
+def get_int_impulse(input_model: data_containers.MedModel) ->  MedSimInternalImpulse:
     sp_num = len(input_model.species)
     of_num = len(input_model.other_factors)
     imp_number = len(input_model.impuluses)
-
-    input_model.impuluses
 
     imp_times = jnp.array([x.time for x in input_model.impuluses])
     time_widths = jnp.array([x.impulse_width + 1e-10 for x in input_model.impuluses])
@@ -118,10 +122,11 @@ def get_impulse_func(input_model: data_containers.MedModel) ->  Callable[[float]
 
     con_matrix = jnp.array(con_matrix)
 
-    
+    delta_sp = MedSimInternelState(concentrations = con_matrix, other_factors = 0)
 
-    return lambda t : MedSimInternelState(concentrations =   (1.0 + jnp.tanh((t - imp_times)/time_widths  ) ) @ con_matrix / 2.0
-                                           , other_factors = np.zeros(of_num) )
+    return MedSimInternalImpulse( time = imp_times, impulse_width = time_widths, delta_species = delta_sp)
+
+
 
 def get_reactions(input_model : data_containers.MedModel) -> Reactions:
     """
@@ -148,8 +153,8 @@ def get_reactions(input_model : data_containers.MedModel) -> Reactions:
 def get_int_med_model(input_model : data_containers.MedModel) -> MedSimInternalModel:
     reacts = get_reactions(input_model)
     of_mod, of_effects = get_OF(input_model)
-    imp_func = get_impulse_func(input_model)
-    return MedSimInternalModel(reactions = reacts, other_factor_noise_model = of_mod, of_reaction_effects = of_effects, species_impulses = imp_func)
+    int_imp = get_int_impulse(input_model)
+    return MedSimInternalModel(reactions = reacts, other_factor_noise_model = of_mod, of_reaction_effects = of_effects, species_impulses = int_imp)
 
 
 
@@ -330,6 +335,8 @@ def get_poisson_func(model: MedSimInternalModel, params: MedSimParams):
     other_factor_stuff = jnp.zeros(model.other_factor_noise_model.restoring_rates.shape)
     return lambda t,y,args : MedSimInternelState(concentrations = masked_react_mat, other_factors = other_factor_stuff)
 
+def eval_impulse(time: float, impulses: MedSimInternalImpulse) -> MedSimInternelState:
+    return (1.0 + jnp.tanh((time - impulses.time)/impulses.impulse_width  ) ) @ impulses.delta_species.concentrations / 2
 
 class DumbControlPath(dfx.AbstractPath):
     model : MedSimInternalModel
@@ -344,10 +351,21 @@ class DumbControlPath(dfx.AbstractPath):
         return None
 
     def evaluate(self, t0, t1, left: bool = True) -> PyTree:
-        t1_val = self.model.species_impulses(t1)
-        t0_val = self.model.species_impulses(t0)
-        delta = jax.tree_util.tree_map(lambda a,b : a-b , t1_val, t0_val)
+        t1_val = eval_impulse(t1, self.model.species_impulses)
+        t0_val = eval_impulse(t0, self.model.species_impulses)
+        of_number = self.model.other_factor_noise_model.restoring_rates.shape
+        delta = MedSimInternelState(concentrations = t1_val - t0_val, other_factors = jnp.zeros(of_number))
         return delta
+
+
+# @chex.dataclass
+# class MedSimInternalImpulse:
+#     time: float
+#     impulse_width: float
+#     delta_species: MedSimInternelState
+
+#     return lambda t : MedSimInternelState(concentrations =   (1.0 + jnp.tanh((t - imp_times)/time_widths  ) ) @ con_matrix / 2.0
+#                                            , other_factors = np.zeros(of_num) )
 
 def get_impulse_term(model: MedSimInternalModel, params: MedSimParams):
     def func(t,y,args):
