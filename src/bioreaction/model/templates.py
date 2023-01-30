@@ -12,6 +12,10 @@ def GeneralMedSim():
     A medium sim to show it's utility, and do tests
     on. 😀 
     No control... yet
+
+    Variables:
+    :prot_species: = a molecule of protein ?
+    :rna_species: = a molecule of RNA
     """
     prot_species = [Species(f"Protein {i}") for i in range(3)]
     rna_species = [Species(f"RNA {i}") for i in range(3)]
