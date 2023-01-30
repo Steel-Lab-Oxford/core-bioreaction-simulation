@@ -14,7 +14,7 @@ def GeneralMedSim():
     No control... yet
 
     Variables:
-    :prot_species: = a molecule of protein ?
+    :prot_species: = a molecule of protein
     :rna_species: = a molecule of RNA
     """
     prot_species = [Species(f"Protein {i}") for i in range(3)]
