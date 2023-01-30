@@ -3,7 +3,7 @@ import chex
 import jax.numpy as jnp
 import numpy as np
 import jax
-from typing import Any, List, Callable
+from typing import Any, List, Callable, Tuple
 from jaxtyping import Array, PyTree
 import diffrax as dfx
 import jax.random as jr
@@ -76,7 +76,7 @@ class MedSimParams:
     brownian_sim_reaction: chex.ArrayDevice
 	#Rest are going to be modelled continuously 
 
-def get_OF(input_model : data_containers.MedModel) -> tuple[OFModel, OFEffects]:
+def get_OF(input_model : data_containers.MedModel) -> Tuple[OFModel, OFEffects]:
     """
     gives the ou stuff
     """
