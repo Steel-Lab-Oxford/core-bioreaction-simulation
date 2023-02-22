@@ -72,12 +72,13 @@ def construct_model_fromnames(sample_names):
 
     reactions = []
     for idx, (i, o) in enumerate(zip(inputs, outputs)):
-        reaction = Reaction()
-        reaction.input = make_species(i, ref_species)
-        reaction.output = combine_species(
-            i, ref_species) if o is None else make_species(o, ref_species)
-        reaction.forward_rate = None
-        reaction.reverse_rate = None
+        reaction = Reaction(
+            input=make_species(i, ref_species),
+            output=combine_species(
+                i, ref_species) if o is None else make_species(o, ref_species),
+            forward_rate=None,
+            reverse_rate=None
+        )
         reactions.append(reaction)
 
     model = MedModel(

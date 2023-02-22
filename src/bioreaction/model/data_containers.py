@@ -4,7 +4,7 @@ from jax import numpy as jnp
 import numpy as np
 import chex
 from dataclasses import dataclass, field
-from ..misc.misc import get_unique_flat, per_mol_to_per_molecules
+from ..misc.misc import get_unique_flat
 
 JNP_DTYPE = jnp.float32
 
