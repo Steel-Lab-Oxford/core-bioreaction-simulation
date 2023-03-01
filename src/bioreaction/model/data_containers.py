@@ -170,15 +170,14 @@ class MedModel():
     controllers: List[ControlledFactor] = field(default_factory=list)
 
 
+@dataclass
 class BasicModel():
     """
     A class representing a collection of species, reactions, and other facts.
     This should represent the abstract notion of some mathematic model of a system.
     """
-
-    def __init__(self, species: List[Species], reactions: List[Reaction]) -> None:
-        self.species = species
-        self.reactions = reactions
+    species: List[Species]
+    reactions: List[Reaction]
 
 
 @chex.dataclass
