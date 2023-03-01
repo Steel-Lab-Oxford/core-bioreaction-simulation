@@ -83,11 +83,11 @@ def construct_model_fromnames(sample_names):
 
     model = MedModel(
         species=retrieve_species_from_reactions(reactions),
-        reactions=reactions,
-        other_factors=None,
-        reaction_extrinsics=None,
-        ou_effects=None,
-        impulses=None,
-        controllers=None
+        reactions=reactions
+        # other_factors=None,
+        # reaction_extrinsics=None,
+        # ou_effects=None,
+        # impulses=None,
+        # controllers=None
     )
     return model

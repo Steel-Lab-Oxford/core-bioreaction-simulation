@@ -84,3 +84,67 @@ def generate_general_medsim():
                        ou_effects=ou_effects)
 
     return modelly
+
+
+def generate_rnabinding_medsim(num_species, a, d, ka, kd, impulse_idx):
+    """
+    A medium sim to show its utility, and do tests
+    on. 😀 
+    No control... yet
+
+    Variables:
+    :prot_species: = a molecule of protein
+    :rna_species: = a molecule of RNA
+    """
+    def flatten(ll):
+        return [num for sublist in ll for num in sublist]
+
+    rna_species = [Species(f"RNA {i}") for i in range(num_species)]
+    boundrna_species_idx = sorted(set(flatten(
+        [[tuple(sorted([i, j])) for i in range(num_species)] for j in range(num_species)])))
+    boundrna_species = [Species(f"RNA {i}-{j}")
+                        for i, j in boundrna_species_idx]
+
+    all_species = rna_species + boundrna_species
+
+    rna_reactions = []
+    for i in range(len(rna_species)):
+        rna_reactions.append(
+            Reaction(input=[], output=[rna_species[i]], forward_rate=a[i], reverse_rate=0))
+        rna_reactions.append(
+            Reaction(input=[rna_species[i]], output=[], forward_rate=0, reverse_rate=d[i]))
+
+    binding_reactions = []
+    for ii in range(len(boundrna_species)):
+        i, j = boundrna_species_idx[ii]
+        make_react = Reaction(input=[rna_species[i], rna_species[j]],
+                              output=[boundrna_species[ii]], forward_rate=ka[i, j], reverse_rate=kd[i, j])
+        binding_reactions.append(make_react)
+
+    all_reactions = rna_reactions + binding_reactions
+
+    other_factors = [OtherFactor("Transcription Factor"),
+                     OtherFactor("RNA Decay Factor")]
+
+    ou_effects = [OUProcess.scale_std_init(other_factors[0], 2.0, 0.15),
+                  OUProcess.scale_std_init(other_factors[1], 0.5, 0.2)]
+
+    # There should be a ncie way of doing this..
+    extra_factors = []
+    [extra_factors.append(
+        ExtraReactionEffect(
+            factor=other_factors[0], target_reaction=rna_reactions[i], forward_strength=1.0, backward_stength=0.0)
+    ) for i in range(len(rna_reactions))]
+    [extra_factors.append(
+        ExtraReactionEffect(
+            factor=other_factors[1], target_reaction=rna_reactions[i], forward_strength=0.0, backward_stength=1.2)
+    ) for i in range(len(rna_reactions))]
+
+    impulses = [Impulse(target=rna_species[impulse_idx],
+                        delta_target=5.0, time=2.4, impulse_width=0.0)]
+
+    modelly = MedModel(species=all_species, reactions=all_reactions, other_factors=other_factors,
+                       reaction_extrinsics=extra_factors, impulses=impulses, controllers=[],
+                       ou_effects=ou_effects)
+
+    return modelly
