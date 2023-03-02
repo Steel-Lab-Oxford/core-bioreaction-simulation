@@ -466,7 +466,7 @@ def basic_de(init_state: MedSimInternelState, model: MedSimInternalModel, params
 
     solver = dfx.Tsit5()
     saveat = dfx.SaveAt(ts=jnp.linspace(params.t_start, params.t_end, 100))
-    return dfx.diffeqsolve(terms, solver, t0=params.t_start, t1=params.t_end, dt0=params.delta_t, y0=init_state, saveat=saveat)
+    return dfx.diffeqsolve(terms, solver, t0=params.t_start, t1=params.t_end, dt0=params.delta_t, y0=init_state, saveat=saveat, max_steps=16**4)
 
 
 def very_basic_de(init_state: MedSimInternelState):
