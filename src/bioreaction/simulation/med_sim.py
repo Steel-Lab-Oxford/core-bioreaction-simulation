@@ -455,7 +455,7 @@ def debug_simulate_chunk(key: jr.PRNGKey, init_state: MedSimInternalState, model
             "b_p": brown_tree, "b_t": brown_term, "p_p": poiss_path, "p_f": poiss_func, "p_t": poiss_term, "i_t": impulse_term}
 
 
-def basic_de(init_state: MedSimInternalState, model: MedSimInternalModel, params: MedSimParams) -> chex.ArrayDevice:
+def basic_de(init_state: MedSimInternalState, model: MedSimInternalModel, params: MedSimParams, max_steps=16**5) -> chex.ArrayDevice:
     """ Basically simulate_chunk but for ODE """
 
     dt_func = get_dt_func(model, params)
@@ -466,7 +466,7 @@ def basic_de(init_state: MedSimInternalState, model: MedSimInternalModel, params
 
     solver = dfx.Tsit5()
     saveat = dfx.SaveAt(ts=jnp.linspace(params.t_start, params.t_end, 500))
-    return dfx.diffeqsolve(terms, solver, t0=params.t_start, t1=params.t_end, dt0=params.delta_t, y0=init_state, saveat=saveat, max_steps=int(params.t_end * 1.5 / params.delta_t))
+    return dfx.diffeqsolve(terms, solver, t0=params.t_start, t1=params.t_end, dt0=params.delta_t, y0=init_state, saveat=saveat, max_steps=max_steps)
 
 
 def very_basic_de(init_state: MedSimInternalState):
