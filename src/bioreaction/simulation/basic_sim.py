@@ -5,7 +5,7 @@ import numpy as np
 import jax
 
 from ..model import data_containers
-from simfuncs.basic_de import one_step_scan_wrapper
+from ..simulation.simfuncs.basic_de import one_step_scan_wrapper
 
 @chex.dataclass
 class BasicSimModel:
