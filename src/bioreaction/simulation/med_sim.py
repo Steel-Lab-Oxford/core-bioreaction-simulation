@@ -70,7 +70,7 @@ class MedSimState:
 @chex.dataclass
 class MedSimParams:
     delta_t: float
-    t_start: float
+    t_start: float = 0
     t_end: float
     poisson_sim_reactions: chex.ArrayDevice
     brownian_sim_reaction: chex.ArrayDevice
