@@ -4,7 +4,7 @@ from jax import numpy as jnp
 import numpy as np
 import chex
 from dataclasses import dataclass, field
-from ..misc.misc import  get_unique_flat, per_mol_to_per_molecules
+from ..misc.misc import get_unique_flat
 
 JNP_DTYPE = jnp.float32
 
@@ -23,6 +23,7 @@ class Species():
     A chemical, protein, or other item which we desire to model
     the amount of over time.
     """
+
     def __init__(self, name: str, physical_data: dict = {}) -> None:
         self.name: str = name
         self.physical_data = physical_data
@@ -41,6 +42,7 @@ class Species():
     def __repr__(self) -> str:
         return 'Species: ' + str(self.name)
 
+
 @dataclass
 class Reaction():
     """
@@ -49,13 +51,15 @@ class Reaction():
     """
     input: List[Species]
     output: List[Species]
-    forward_rate : float
+    forward_rate: float
     reverse_rate: float = 0.0
+
 
 class Reactant():
     """
     Translate between species and reaction
     """
+
     def __init__(self) -> None:
         self.species: Species
         self.quantity: Any
@@ -67,8 +71,10 @@ class Extrinsics():
     Other factors which we desire to model, which are relevent to our
     process.
     """
+
     def __init__(self) -> None:
         pass
+
 
 @dataclass
 class OtherFactor():
@@ -79,6 +85,7 @@ class OtherFactor():
     Probably a real number? 🙂 idk lol
     """
     name: str
+
 
 @dataclass
 class OUProcess():
@@ -97,8 +104,9 @@ class OUProcess():
         y scale. More natural and understandable. 
         """
         r_rate = 1.0/time_scale
-        sigma = y_scale * np.sqrt(2* r_rate)
-        return OUProcess(target = target, restoring_rate=r_rate, noise_scale=sigma)
+        sigma = y_scale * np.sqrt(2 * r_rate)
+        return OUProcess(target=target, restoring_rate=r_rate, noise_scale=sigma)
+
 
 @dataclass
 class ExtraReactionEffect():
@@ -106,10 +114,11 @@ class ExtraReactionEffect():
     Some other factor affects the rate of some reaction. 
     So the rate of reaction will be multiplied by exp(k*other_factor)
     """
-    factor : OtherFactor
-    target_reaction : Reaction
+    factor: OtherFactor
+    target_reaction: Reaction
     forward_strength: float
     backward_stength: float = 0.0
+
 
 @dataclass
 class Impulse():
@@ -131,18 +140,19 @@ class ControlledFactor():
     """
     targets: List[OtherFactor]
     observations: List[Species]
-    control_function: Callable[ [chex.ArrayDevice] , chex.ArrayDevice]
+    control_function: Callable[[chex.ArrayDevice], chex.ArrayDevice]
     # how often you observe the system
     observation_period: float
     # how many observations before effect happen
     observation_delay: int
     # We have a tanh backend, with these effects in mind.
-    # Hence we effectively put a tanh on whatever the network outputs. 
-    # The reason for a list is because if we have a neural network 
-    # controlling lots of things at once, with different scales. 
-    output_max : List[float]
+    # Hence we effectively put a tanh on whatever the network outputs.
+    # The reason for a list is because if we have a neural network
+    # controlling lots of things at once, with different scales.
+    output_max: List[float]
     output_min: List[float]
     output_sensitivity: List[float]
+
 
 @dataclass
 class MedModel():
@@ -150,23 +160,24 @@ class MedModel():
     A slightly better, more complete model.
     Allows for more good stuff
     """
-    species : List[Species]
+    species: List[Species]
     reactions: List[Reaction]
-    other_factors: List[OtherFactor]  = field(default_factory=list)
-    reaction_extrinsics: List[ExtraReactionEffect] = field(default_factory=list)
+    other_factors: List[OtherFactor] = field(default_factory=list)
+    reaction_extrinsics: List[ExtraReactionEffect] = field(
+        default_factory=list)
     ou_effects: List[OUProcess] = field(default_factory=list)
-    impuluses: List[Impulse] = field(default_factory=list)
+    impulses: List[Impulse] = field(default_factory=list)
     controllers: List[ControlledFactor] = field(default_factory=list)
 
 
+@dataclass
 class BasicModel():
     """
     A class representing a collection of species, reactions, and other facts.
     This should represent the abstract notion of some mathematic model of a system.
     """
-    def __init__(self, species: List[Species] ,reactions: List[Reaction] ) -> None:
-        self.species = species
-        self.reactions = reactions
+    species: List[Species]
+    reactions: List[Reaction]
 
 
 @chex.dataclass

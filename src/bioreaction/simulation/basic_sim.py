@@ -5,6 +5,7 @@ import numpy as np
 import jax
 
 from ..model import data_containers
+from ..simulation.simfuncs.basic_de import one_step_scan_wrapper
 
 @chex.dataclass
 class BasicSimModel:
@@ -46,19 +47,6 @@ def convert_model(input_model : data_containers.BasicModel) -> BasicSimModel:
 
     return BasicSimModel(inputs = jnp.array(inputs), outputs = jnp.array(outputs), 
                     forward_rates = jnp.array(forward_rates), reverse_rates = jnp.array(reverse_rates))
-
-def one_step_de_sim(spec_conc, reactions: BasicSimModel):
-    concentration_factors_in = jnp.prod(
-        jnp.power(spec_conc, (reactions.inputs)), axis=1)
-    concentration_factors_out = jnp.prod(
-        jnp.power(spec_conc, (reactions.outputs)), axis=1)
-    forward_delta = concentration_factors_in * reactions.forward_rates
-    reverse_delta = concentration_factors_out * reactions.reverse_rates
-    return (forward_delta - reverse_delta) @ (reactions.outputs - reactions.inputs)
-
-
-def one_step_scan_wrapper(spec_conc: chex.ArrayDevice, reactions: BasicSimModel, delta_t: float):
-    return spec_conc + one_step_de_sim(spec_conc, reactions) * delta_t
 
 
 def basic_de_sim(starting_state: BasicSimState, model: BasicSimModel, params: BasicSimParams):
