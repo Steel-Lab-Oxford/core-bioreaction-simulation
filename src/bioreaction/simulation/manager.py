@@ -6,8 +6,13 @@ def num_unsteadied(comparison, threshold):
     return np.sum(np.abs(comparison) > threshold)
 
 
-def simulate_steady_states(y0, total_time, reverse_rates, sim_func, t0, t1, threshold = 0.1):
-    ti = 0
+def simulate_steady_states(y0, total_time, reverse_rates, sim_func, t0, t1,
+                           threshold=0.1, disable_logging=False):
+    """ Simulate a function sim_func for a chunk of time in steps of t0 - t1, starting at 
+    t0 and running until either the steady states have been reached (specified via threshold) 
+    or until the total_time as has been reached. """
+
+    ti = t0
     iter_time = datetime.now()
     while True:
         if ti == t0:
@@ -23,7 +28,7 @@ def simulate_steady_states(y0, total_time, reverse_rates, sim_func, t0, t1, thre
         else:
             ys = x_res.ys
             ts = x_res.ts + ti
-            
+
         if ti == t0:
             ys_full = ys
             ts_full = ts
@@ -33,8 +38,9 @@ def simulate_steady_states(y0, total_time, reverse_rates, sim_func, t0, t1, thre
 
         if (num_unsteadied(ys[:, -1, :] - y00) == 0, threshold) or (ti >= total_time):
             break
-        print('Steady states: ', ti, ' iterations. ', (num_unsteadied(
-            ys[:, -1, :] - y00), threshold), ' left to steady out. ', datetime.now() - iter_time)
+        if not disable_logging:
+            print('Steady states: ', ti, ' iterations. ', (num_unsteadied(
+                ys[:, -1, :] - y00), threshold), ' left to steady out. ', datetime.now() - iter_time)
 
         ti += t1 - t0
 
