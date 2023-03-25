@@ -48,7 +48,7 @@ def simulate_steady_states(y0, total_time, sim_func, t0, t1,
             ys_full = np.concatenate([ys_full, ys], axis=1)
             ts_full = np.concatenate([ts_full, ts], axis=1)
 
-        if (num_unsteadied(ys[:, -1, :] - y00) == 0, threshold) or (ti >= total_time):
+        if (num_unsteadied(ys[:, -1, :] - y00, threshold) == 0) or (ti >= total_time):
             break
         if not disable_logging:
             print('Steady states: ', ti, ' iterations. ', num_unsteadied(
