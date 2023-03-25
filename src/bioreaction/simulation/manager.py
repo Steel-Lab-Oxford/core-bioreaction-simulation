@@ -6,11 +6,23 @@ def num_unsteadied(comparison, threshold):
     return np.sum(np.abs(comparison) > threshold)
 
 
-def simulate_steady_states(y0, total_time, reverse_rates, sim_func, t0, t1,
-                           threshold=0.1, disable_logging=False):
-    """ Simulate a function sim_func for a chunk of time in steps of t0 - t1, starting at 
+def simulate_steady_states(y0, total_time, sim_func, t0, t1,
+                           threshold=0.1, disable_logging=False, 
+                           **sim_kwargs):
+    """ Simulate a function sim_func for a chunk of time in steps of t1 - t0, starting at 
     t0 and running until either the steady states have been reached (specified via threshold) 
-    or until the total_time as has been reached. """
+    or until the total_time as has been reached. Assumes batching.
+    
+    Args:
+    y0: initial state, shape = (batch, time, vars)
+    t0: initial time
+    t1: simulation chunk end time
+    total_time: total time to run the simulation function over
+    sim_kwargs: any (batchable) arguments left to give the simulation function,
+        for example rates or other parameters
+    threshold: minimum difference between the final states of two consecutive runs 
+        for the state to be considered steady
+    """
 
     ti = t0
     iter_time = datetime.now()
@@ -20,7 +32,7 @@ def simulate_steady_states(y0, total_time, reverse_rates, sim_func, t0, t1,
         else:
             y00 = ys[:, -1, :]
 
-        x_res = sim_func(y00, reverse_rates)
+        x_res = sim_func(y00, **sim_kwargs)
 
         if np.sum(np.argmax(x_res.ts >= np.inf)) > 0:
             ys = x_res.ys[:, :np.argmax(x_res.ts >= np.inf), :]
