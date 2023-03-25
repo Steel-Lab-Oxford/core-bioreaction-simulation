@@ -51,8 +51,8 @@ def simulate_steady_states(y0, total_time, sim_func, t0, t1,
         if (num_unsteadied(ys[:, -1, :] - y00) == 0, threshold) or (ti >= total_time):
             break
         if not disable_logging:
-            print('Steady states: ', ti, ' iterations. ', (num_unsteadied(
-                ys[:, -1, :] - y00), threshold), ' left to steady out. ', datetime.now() - iter_time)
+            print('Steady states: ', ti, ' iterations. ', num_unsteadied(
+                ys[:, -1, :] - y00, threshold), ' left to steady out. ', datetime.now() - iter_time)
 
         ti += t1 - t0
 
