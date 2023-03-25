@@ -6,13 +6,22 @@ def num_unsteadied(comparison, threshold):
     return np.sum(np.abs(comparison) > threshold)
 
 
+def did_sim_break(y):
+    if (np.sum(np.isnan(y)) > 0):
+        raise ValueError(
+            f'Simulation failed - some runs ({np.sum(np.isnan(y))/np.size(y) * 100} %) go to nan. Try lowering dt.')
+    if (np.sum(y == np.inf) > 0):
+        raise ValueError(
+            f'Simulation failed - some runs ({np.sum(y == np.inf)/np.size(y) * 100} %) go to inf. Try lowering dt.')
+
+
 def simulate_steady_states(y0, total_time, sim_func, t0, t1,
-                           threshold=0.1, disable_logging=False, 
+                           threshold=0.1, disable_logging=False,
                            **sim_kwargs):
     """ Simulate a function sim_func for a chunk of time in steps of t1 - t0, starting at 
     t0 and running until either the steady states have been reached (specified via threshold) 
     or until the total_time as has been reached. Assumes batching.
-    
+
     Args:
     y0: initial state, shape = (batch, time, vars)
     t0: initial time
@@ -40,6 +49,8 @@ def simulate_steady_states(y0, total_time, sim_func, t0, t1,
         else:
             ys = x_res.ys
             ts = x_res.ts + ti
+
+        did_sim_break(ys)
 
         if ti == t0:
             ys_full = ys
