@@ -6,11 +6,11 @@ def num_unsteadied(comparison, threshold):
     return np.sum(np.abs(comparison) > threshold)
 
 
-def simulate_steady_states(y0, total_time, reverse_rates, sim_func, params, threshold = 0.1):
+def simulate_steady_states(y0, total_time, reverse_rates, sim_func, t0, t1, threshold = 0.1):
     ti = 0
     iter_time = datetime.now()
     while True:
-        if ti == params.t_start:
+        if ti == t0:
             y00 = y0
         else:
             y00 = ys[:, -1, :]
@@ -24,18 +24,18 @@ def simulate_steady_states(y0, total_time, reverse_rates, sim_func, params, thre
             ys = x_res.ys
             ts = x_res.ts + ti
             
-        if ti == params.t_start:
+        if ti == t0:
             ys_full = ys
             ts_full = ts
         else:
             ys_full = np.concatenate([ys_full, ys], axis=1)
             ts_full = np.concatenate([ts_full, ts], axis=1)
 
-        if (num_unsteadied(ys[:, -1, :] - y00) == 0) or (ti >= total_time):
+        if (num_unsteadied(ys[:, -1, :] - y00) == 0, threshold) or (ti >= total_time):
             break
         print('Steady states: ', ti, ' iterations. ', (num_unsteadied(
-            ys[:, -1, :] - y00)), ' left to steady out. ', datetime.now() - iter_time)
+            ys[:, -1, :] - y00), threshold), ' left to steady out. ', datetime.now() - iter_time)
 
-        ti += params.t_end - params.t_start
+        ti += t1 - t0
 
     return np.array(ys_full), np.array(ts_full[0])
