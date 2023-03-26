@@ -6,7 +6,7 @@ import jax.numpy as jnp
 
 
 def combine_species(species: List[str], ref_species: Dict[str, Species]):
-    return [Species(tuple(make_species(species, ref_species)))]
+    return [Species(tuple(get_species(species, ref_species)))]
 
 
 def pairup_combination(samples: list, astype=list):
@@ -17,7 +17,7 @@ def pairup_combination(samples: list, astype=list):
     return list(sorted([astype(s) for s in (set(combination))]))
 
 
-def make_species(species: List[str], ref_species: Dict[str, Species]):
+def get_species(species: List[str], ref_species: Dict[str, Species]):
     return list(ref_species[i] for i in sorted(species))
 
 
@@ -43,9 +43,9 @@ def construct_model(config: dict):
         flatten_listlike(inputs + outputs, safe=True)) if s is not None}
     for idx, (i, o) in enumerate(zip(inputs, outputs)):
         reaction = Reaction()
-        reaction.input = make_species(i, ref_species)
+        reaction.input = get_species(i, ref_species)
         reaction.output = combine_species(
-            i, ref_species) if o is None else make_species(o, ref_species)
+            i, ref_species) if o is None else get_species(o, ref_species)
         reaction.forward_rate = forward_rates[idx]
         reaction.reverse_rate = reverse_rates[idx]
         model.reactions.append(reaction)
@@ -63,19 +63,24 @@ def construct_model_fromnames(sample_names):
     The bound-together complexes formed by each pair of samples
     are the outputs and are generated from the string list too """
 
-    inputs = [[s] for s in sample_names] + \
-        pairup_combination(sample_names) + [[]] * len(sample_names)
-    outputs = [[]] * len(sample_names) + pairup_combination(sample_names,
-                                                            astype=list_wrap) + [[s] for s in sample_names]
+    paired_samples_single = pairup_combination(sample_names)
+    paired_samples = pairup_combination(sample_names, astype=list_wrap)
+
+    # Degradation - Binding - Creation
+    inputs = [[s] for s in sample_names] + paired_samples + paired_samples_single + [[]] * len(sample_names)
+    outputs = [[]] * (len(sample_names) + len(paired_samples)) + paired_samples + [[s] for s in sample_names]
+    # inputs = [[s] for s in sample_names] + \
+    #     paired_samples_single + [[]] * len(sample_names)
+    # outputs = [[]] * len(sample_names) + paired_samples + [[s] for s in sample_names]
     ref_species = {s: Species(s) for s in set(
         flatten_listlike(inputs + outputs, safe=True)) if s is not None}
 
     reactions = []
     for idx, (i, o) in enumerate(zip(inputs, outputs)):
         reaction = Reaction(
-            input=make_species(i, ref_species),
+            input=get_species(i, ref_species),
             output=combine_species(
-                i, ref_species) if o is None else make_species(o, ref_species),
+                i, ref_species) if o is None else get_species(o, ref_species),
             forward_rate=None,
             reverse_rate=None
         )
