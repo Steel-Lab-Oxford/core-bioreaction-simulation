@@ -238,14 +238,22 @@ class QuantifiedReactions():
         return reactions
 
     def init_reactants(self, model: BasicModel, config: dict):
+        """ Note: input species here are just the species that are actually
+        specified initially / those that have a starting concentration. 
+        Retrieving the input species could be improved. """
         reactants = []
-        input_species = get_unique_flat([r.input for r in model.reactions])
+        input_species = get_unique_flat(
+            [r.output for r in model.reactions if not r.input])
 
         for specie in model.species:
             reactant = Reactant()
             reactant.species = specie
             if specie in input_species:
-                reactant.quantity = config['starting_concentration'][specie.name]
+                try:
+                    reactant.quantity = config['starting_concentration'][specie.name]
+                except KeyError:
+                    logging.warning(
+                        f'The species {specie.name} is probably not specified in the config. Concentration not set.')
             else:
                 reactant.quantity = 0
             reactants.append(reactant)

@@ -112,14 +112,19 @@ def generate_rnabinding_medsim(num_species, a, d, ka, kd, impulse_idx):
         rna_reactions.append(
             Reaction(input=[], output=[rna_species[i]], forward_rate=a[i], reverse_rate=0))
         rna_reactions.append(
-            Reaction(input=[rna_species[i]], output=[], forward_rate=0, reverse_rate=d[i]))
+            Reaction(input=[rna_species[i]], output=[], forward_rate=d[i], reverse_rate=0))
 
     binding_reactions = []
     for ii in range(len(boundrna_species)):
         i, j = boundrna_species_idx[ii]
         make_react = Reaction(input=[rna_species[i], rna_species[j]],
                               output=[boundrna_species[ii]], forward_rate=ka[i, j], reverse_rate=kd[i, j])
+        # Degradation of bound RNA
+        deg_brna = Reaction(input=[boundrna_species[ii]],
+                              output=[], forward_rate=d[num_species+ii], reverse_rate=0)
         binding_reactions.append(make_react)
+        binding_reactions.append(deg_brna)
+
 
     all_reactions = rna_reactions + binding_reactions
 

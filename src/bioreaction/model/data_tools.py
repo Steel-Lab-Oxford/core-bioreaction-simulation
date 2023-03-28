@@ -58,7 +58,7 @@ def list_wrap(x, inner_type=str):
     return [inner_type(x)]
 
 
-def construct_model_fromnames(sample_names):
+def construct_model_fromnames(sample_names, include_prod_deg=True):
     """ Constructs a model from a string of sample names.
     The bound-together complexes formed by each pair of samples
     are the outputs and are generated from the string list too """
@@ -67,8 +67,12 @@ def construct_model_fromnames(sample_names):
     paired_samples = pairup_combination(sample_names, astype=list_wrap)
 
     # Degradation - Binding - Creation
-    inputs = [[s] for s in sample_names] + paired_samples + paired_samples_single + [[]] * len(sample_names)
-    outputs = [[]] * (len(sample_names) + len(paired_samples)) + paired_samples + [[s] for s in sample_names]
+    if include_prod_deg:
+        inputs = [[s] for s in sample_names] + paired_samples + paired_samples_single + [[]] * len(sample_names)
+        outputs = [[]] * (len(sample_names) + len(paired_samples)) + paired_samples + [[s] for s in sample_names]
+    else:
+        inputs = paired_samples_single
+        outputs = paired_samples
     # inputs = [[s] for s in sample_names] + \
     #     paired_samples_single + [[]] * len(sample_names)
     # outputs = [[]] * len(sample_names) + paired_samples + [[s] for s in sample_names]
