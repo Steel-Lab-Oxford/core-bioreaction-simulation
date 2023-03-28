@@ -86,7 +86,7 @@ def generate_general_medsim():
     return modelly
 
 
-def generate_rnabinding_medsim(num_species, a, d, ka, kd, impulse_idx):
+def generate_rnabinding_medsim(num_species, a, d, ka, kd, impulse_idx, degrade_bound_species=False):
     """
     A medium sim to show its utility, and do tests
     on. 😀 
@@ -119,11 +119,12 @@ def generate_rnabinding_medsim(num_species, a, d, ka, kd, impulse_idx):
         i, j = boundrna_species_idx[ii]
         make_react = Reaction(input=[rna_species[i], rna_species[j]],
                               output=[boundrna_species[ii]], forward_rate=ka[i, j], reverse_rate=kd[i, j])
-        # Degradation of bound RNA
-        deg_brna = Reaction(input=[boundrna_species[ii]],
-                              output=[], forward_rate=d[num_species+ii], reverse_rate=0)
         binding_reactions.append(make_react)
-        binding_reactions.append(deg_brna)
+        # Degradation of bound RNA
+        if degrade_bound_species:
+            deg_brna = Reaction(input=[boundrna_species[ii]],
+                                output=[], forward_rate=d[num_species+ii], reverse_rate=0)
+            binding_reactions.append(deg_brna)
 
 
     all_reactions = rna_reactions + binding_reactions

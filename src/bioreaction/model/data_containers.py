@@ -243,7 +243,7 @@ class QuantifiedReactions():
         Retrieving the input species could be improved. """
         reactants = []
         input_species = get_unique_flat(
-            [r.output for r in model.reactions if not r.input])
+            [r.input for r in model.reactions if r.output])
 
         for specie in model.species:
             reactant = Reactant()
