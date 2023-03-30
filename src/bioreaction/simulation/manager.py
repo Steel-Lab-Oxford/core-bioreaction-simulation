@@ -62,13 +62,16 @@ def simulate_steady_states(y0, total_time, sim_func, t0, t1,
 
         ti += t1 - t0
 
-        deriv = jnp.gradient(ys[:, -5:], axis=1)
-        if (num_unsteadied(deriv[:, -1, :], threshold) == 0) or (ti >= total_time):
+        if ys.shape[1] > 1:
+            fderiv = jnp.gradient(ys[:, -5:, :], axis=1)[:, -1, :]
+        else:
+            fderiv = ys[:, -1, :] - y00
+        if (num_unsteadied(fderiv, threshold) == 0) or (ti >= total_time):
             if not disable_logging:
                 print('Done: ', datetime.now() - iter_time)
             break
         if not disable_logging:
-            print('Steady states: ', ti, ' iterations. ', num_unsteadied(deriv[:, -1, :], threshold), ' left to steady out. ', datetime.now() - iter_time)
+            print('Steady states: ', ti, ' iterations. ', num_unsteadied(fderiv, threshold), ' left to steady out. ', datetime.now() - iter_time)
 
 
     return np.array(ys_full), np.array(ts_full[0])
