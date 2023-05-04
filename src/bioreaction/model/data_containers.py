@@ -259,3 +259,11 @@ class QuantifiedReactions():
                 reactant.quantity = 0
             reactants.append(reactant)
         return reactants
+    
+    def update_reactants(self, model: BasicModel):
+        for i, s in enumerate(model.species):
+            self.reactants[i].species = s
+            
+    def update_reactions(self, model: BasicModel):
+        self.reactions.col_labels = list([s.name for s in model.species])
+
