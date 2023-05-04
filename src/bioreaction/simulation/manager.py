@@ -29,7 +29,7 @@ def simulate_steady_states(y0, total_time, sim_func, t0, t1,
     t1: simulation chunk end time
     total_time: total time to run the simulation function over
     sim_kwargs: any (batchable) arguments left to give the simulation function,
-        for example rates or other parameters
+        for example rates or other parameters. First arg must be y0
     threshold: minimum difference between the final states of two consecutive runs 
         for the state to be considered steady
     """
