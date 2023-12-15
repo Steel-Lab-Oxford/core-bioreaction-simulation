@@ -45,7 +45,7 @@ class TestModel(unittest.TestCase):
 
         model = construct_model(fake_config)
         qreactions = QuantifiedReactions()
-        qreactions.init_properties(model, fake_config)
+        qreactions.init_properties(model, fake_config['starting_concentration'])
 
         self.assertEqual(qreactions.quantities[0], 
             fake_config['starting_concentration']['A'])

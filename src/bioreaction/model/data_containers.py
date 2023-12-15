@@ -209,8 +209,8 @@ class QuantifiedReactions():
         self.reactants: List[Reactant]
         self.quantities: chex.ArrayDevice
 
-    def init_properties(self, model: BasicModel, config):
-        self.reactants = self.init_reactants(model, config)
+    def init_properties(self, model: BasicModel, starting_concentrations: dict):
+        self.reactants = self.init_reactants(model, starting_concentrations)
         self.quantities = jnp.array(
             [r.quantity for r in self.reactants], dtype=JNP_DTYPE)
         self.reactions = self.init_reactions(model)
@@ -236,7 +236,7 @@ class QuantifiedReactions():
                               forward_rates=forward_rates, reverse_rates=reverse_rates)
         return reactions
 
-    def init_reactants(self, model: BasicModel, config: dict):
+    def init_reactants(self, model: BasicModel, starting_concentrations: dict):
         """ Note: input species here are just the species that are actually
         specified initially / those that have a starting concentration. 
         Retrieving the input species could be improved. """
@@ -249,7 +249,7 @@ class QuantifiedReactions():
             reactant.species = specie
             if specie in input_species:
                 try:
-                    reactant.quantity = config['starting_concentration'][specie.name]
+                    reactant.quantity = starting_concentrations[specie.name]
                 except KeyError:
                     logging.warning(
                         f'The species {specie.name} is probably not specified in the config. Concentration not set.')
