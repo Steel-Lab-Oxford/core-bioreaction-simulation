@@ -218,9 +218,7 @@ class QuantifiedReactions():
     def init_reactions(self, model: BasicModel):
 
         def make_onehot(matrix):
-            onehot = deepcopy(matrix)
-            onehot[onehot > 0] = 1
-            return jnp.array(onehot, dtype=JNP_DTYPE)
+            return jnp.array(jnp.where(matrix > 0, 1, matrix), dtype=JNP_DTYPE)
 
         inputs = np.zeros((len(model.reactions), len(model.species)))
         outputs = np.zeros((len(model.reactions), len(model.species)))
