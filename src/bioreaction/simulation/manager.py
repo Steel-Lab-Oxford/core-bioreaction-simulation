@@ -75,4 +75,4 @@ def simulate_steady_states(y0, total_time, sim_func, t0, t1,
 
     if ts_full.ndim > 1:
         ts_full = ts_full[0]
-    return np.array(ys_full), np.array(ts_full[0])
+    return np.array(ys_full), np.array(ts_full)
