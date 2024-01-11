@@ -252,9 +252,10 @@ class QuantifiedReactions():
                     reactant.quantity = starting_concentrations[specie.name]
                 except KeyError:
                     logging.warning(
-                        f'The species {specie.name} is probably not specified in the config. Concentration not set.')
+                        f'The species {specie.name} is probably not specified in the config. Concentration set to zero.')
+                    reactant.quantity = 0.0
             else:
-                reactant.quantity = 0
+                reactant.quantity = 0.0
             reactants.append(reactant)
         return reactants
     
