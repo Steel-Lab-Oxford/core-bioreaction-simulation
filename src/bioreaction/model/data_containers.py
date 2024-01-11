@@ -257,7 +257,6 @@ class QuantifiedReactions():
             else:
                 reactant.quantity = 0.0
             reactants.append(reactant)
-        logging.warning(reactants[0].__dict__)
         return reactants
     
     def update_reactants(self, model: BasicModel):
