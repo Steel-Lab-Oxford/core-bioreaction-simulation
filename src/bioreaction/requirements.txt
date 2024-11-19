@@ -1,0 +1,10 @@
+# I CBA to add requirments properly in all places right now xx
+# haha ima add some cuz I wanna pip install and run stuff
+chex
+diffrax
+ipykernel
+jax
+numpy
+matplotlib
+pandas
+seaborn
